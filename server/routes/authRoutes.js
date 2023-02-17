@@ -8,8 +8,7 @@ router.get('/login', async (req, res) => {
 });
 
 router.post('/post', async (req, res) => {
-
-    console.log(req.body);
+    // console.log(req.body);
     const userData = {
         name : req.body.name,
         email : req.body.email,
