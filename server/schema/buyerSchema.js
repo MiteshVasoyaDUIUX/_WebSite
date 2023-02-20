@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
+const buyerSchema = new mongoose.Schema({
     name:  {
         type : String,
         required : true
     }, 
-    email: {
+    item: {
         type : String,
-        required: true
+        required : true
     },
     password:   {
         type : String,
@@ -19,4 +19,4 @@ const userSchema = new mongoose.Schema({
     },
   });
 
-  module.exports =  mongoose.model('UserSchema', userSchema);
+  module.exports =  mongoose.model('BuyerSchema', buyerSchema);

@@ -7,12 +7,15 @@ const jwt = require("jsonwebtoken");
 router.get("/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await userSchema.findOne({ email });
-
-  const passwordCmp = await bcrypt.compareSync(password, user.password);
+console.log(user);
+  if(!user) {
+    res.end("User Not Found...");
+  } else{
+    const passwordCmp = await bcrypt.compareSync(password, user.password);
   if(passwordCmp) {
     const token = await generateToken(user._id);
-    localStorage.setItem('Token', token);
-    console.log(Token);
+    console.log(token);
+    console.log("----------------------------------------------------------------------------------");
     res.json({
         Email : user.email,
         role : user.role,
@@ -21,6 +24,8 @@ router.get("/login", async (req, res) => {
   } else {
     res.end("Invalid Credentials...");
   }
+  }
+  
 
 //   res.json(user);
 });
