@@ -5,7 +5,9 @@ const itemListRoute = require("./routes/itemListRoute");
 const PORT = 5555;
 const dbConnection = require("./db/db");
 const bodyParser = require("body-parser")
+const dotenv = require('dotenv');
 
+dotenv.config();
 dbConnection();
 
 app.use(express.json());

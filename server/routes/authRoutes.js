@@ -7,14 +7,14 @@ const jwt = require("jsonwebtoken");
 router.get("/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await userSchema.findOne({ email });
-console.log(user);
+console.log("In Login : ", user);
   if(!user) {
     res.end("User Not Found...");
   } else{
     const passwordCmp = await bcrypt.compareSync(password, user.password);
   if(passwordCmp) {
     const token = await generateToken(user._id);
-    console.log(token);
+    console.log("In Login : ", token);
     console.log("----------------------------------------------------------------------------------");
     res.json({
         Email : user.email,
@@ -59,7 +59,7 @@ router.get("/Register", (req, res) => {
 
 const generateToken = async (id) => {
     // console.log(id.toString());
-    const token = await jwt.sign({id}, "SECRET_KEY", {
+    const token = await jwt.sign({id}, process.env.SECRET_KEY, {
         expiresIn : '30d'
     });
 // console.log(token);
