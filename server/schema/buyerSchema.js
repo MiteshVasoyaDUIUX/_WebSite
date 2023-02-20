@@ -5,12 +5,12 @@ const buyerSchema = new mongoose.Schema({
         type : String,
         required : true
     }, 
-    item: {
+    email: {
         type : String,
         required : true
     },
-    password:   {
-        type : String,
+    orderId:   {
+        type : mongoose.Schema.Types.ObjectId,
         required : true
     },
     role:   {
@@ -19,4 +19,4 @@ const buyerSchema = new mongoose.Schema({
     },
   });
 
-  module.exports =  mongoose.model('BuyerSchema', buyerSchema);
+  module.exports =  mongoose.model('buyerSchema', buyerSchema);

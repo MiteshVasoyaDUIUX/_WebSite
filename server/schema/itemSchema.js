@@ -25,4 +25,4 @@ const itemSchema = new mongoose.Schema({
     },
   });
 
-  module.exports =  mongoose.model('ItemSchema', itemSchema);
+  module.exports =  mongoose.model('itemSchema', itemSchema);
