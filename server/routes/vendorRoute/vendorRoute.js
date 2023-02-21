@@ -1,13 +1,15 @@
 const express = require("express");
-const { protect } = require("../../middleware/authMiddleware");
+const { protectLoginRegister, protectDeletionUpdation } = require("../../middleware/authMiddleware");
 const router = express.Router();
 const itemSchema = require("../../schema/itemSchema");
 
-router.get("/", protect, (req, res) => {
+//Vendor's Dashboard...
+router.get("/", protectLoginRegister, (req, res) => {
   res.end("Vendor Dashboard");
 });
 
-router.get("/vendor/items", protect, async (req, res) => {
+//List of all Items of Vendors...
+router.get("/getitems", protectDeletionUpdation, async (req, res) => {
   const vendorId = req.user.id;
   const role = req.user.role;
   console.log("Vendor : ", { vendorId });
@@ -24,8 +26,8 @@ router.get("/vendor/items", protect, async (req, res) => {
   }
 });
 
-
-router.post("/vendor/item", protect, async (req, res) => {
+//List New Item...
+router.post("/additem", protectDeletionUpdation, async (req, res) => {
   const { vendorId, name, quantity, price, image } = req.body;
   const userId = req.user.id;
   const role = req.user.role;
@@ -48,6 +50,20 @@ router.post("/vendor/item", protect, async (req, res) => {
     res.end("Not Vendor");
   }
   // console.log('req.user.id', req.user.id);
+});
+
+router.delete("/item/:id", protectDeletionUpdation, async (req, res) => {
+  const adminId = req.user.id;
+  const role = req.user.role;
+
+    const item = await itemSchema.findByIdAndDelete(req.params.id);
+    // console.log("req.user.role : ", req.user.role);
+
+    if (!item) {
+      console.log("No items found");
+    } else {
+      res.json(item);
+    }
 });
 
 module.exports = router;

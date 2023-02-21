@@ -1,16 +1,17 @@
 const express = require("express");
-const { protect } = require("../../middleware/authMiddleware");
+const { protectLoginRegister, protectView, protectDeletionUpdation, allUsers } = require("../../middleware/authMiddleware");
 const router = express.Router();
 const itemSchema = require("../../schema/itemSchema");
 const userSchema = require("../../schema/userSchema");
 
 //Admin Dashboard...
-router.get("/", protect, (req, res) => {
+router.get("/", protectLoginRegister, (req, res) => {
     res.end("Admin Dashboard");
 });
 
 //Get list of all Items by all Vendors...
-router.get("/allitems", protect, async (req, res) => {
+router.get("/allitems", protectDeletionUpdation, async (req, res) => {
+  console.log("request : ", req)
   const vendorId = req.user.id;
   const role = req.user.role;
 
@@ -18,20 +19,41 @@ router.get("/allitems", protect, async (req, res) => {
   console.log("req.user.role : ", req.user.role);
   if (items.length == 0) {
     console.log("No items found");
+  } else {
+    res.json(items);
   }
 });
 
 //Get list of all Users (including Vendors and Buyers)...
-router.get("/allusers", protect, async (req, res) => {
-  const vendorId = req.user.id;
+router.get("/allusers", allUsers, async (req, res) => {
+  const adminId = req.user.id;
   const role = req.user.role;
 
+  if(role === 'admin'){
     const items = await userSchema.find();
     console.log("req.user.role : ", req.user.role);
     if (items.length == 0) {
-      console.log("No items found");
+      console.log("Item Not found");
     } else {
       res.json(items);
+    }
+  } else{
+    res.end("Not Admin. If You are, Contact another Admin...");
+  }
+    
+});
+
+router.delete("/item/:id", protectDeletionUpdation, async (req, res) => {
+  const adminId = req.user.id;
+  const role = req.user.role;
+
+    const item = await itemSchema.findByIdAndDelete(req.params.id);
+    // console.log("req.user.role : ", req.user.role);
+
+    if (!item) {
+      console.log("No items found");
+    } else {
+      res.json(item);
     }
 });
 

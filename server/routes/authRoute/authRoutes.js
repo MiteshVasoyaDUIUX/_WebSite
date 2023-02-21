@@ -5,8 +5,9 @@ const userSchema = require("../../schema/userSchema");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { protect } = require("../../middleware/authMiddleware");
-const buyerRoute = require('../buyerRoute/buyerRoute');
+const buyerRoute = require("../buyerRoute/buyerRoute");
 
+//User Login...
 router.get("/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await userSchema.findOne({ email });
@@ -16,7 +17,7 @@ router.get("/login", async (req, res) => {
   } else {
     const passwordCmp = await bcrypt.compareSync(password, user.password);
     if (passwordCmp) {
-      const token = await generateToken(user._id);
+      const token = await generateToken(user._id, user.role);
       console.log("In Login : ", token);
       console.log(
         "----------------------------------------------------------------------------------"
@@ -28,11 +29,12 @@ router.get("/login", async (req, res) => {
       });
 
       if (user.role === "buyer") {
-        app.use('/buyer', buyerRoute)
+        console.log(`/buyer?token=${token}`);
+        res.redirect(`/buyer?token=${token}`);
       } else if (user.role === "vendor") {
-        res.redirect("/vendor");
+        res.redirect(`/vendor?token=${token}`);
       } else if (user.role === "admin") {
-        res.redirect("/admin");
+        res.redirect(`/admin?token=${token}`);
       }
     } else {
       res.end("Invalid Credentials...");
@@ -42,6 +44,7 @@ router.get("/login", async (req, res) => {
   //   res.json(user);
 });
 
+//User Registration...
 router.post("/register", async (req, res) => {
   const { name, email, password, role } = req.body;
   // console.log(name, email, password, role);
@@ -67,19 +70,19 @@ router.post("/register", async (req, res) => {
     console.log("Token : ", token);
     res.json({
       userAdd,
-      token : token
+      token: token,
     });
   }
 });
-
 
 // router.get('/login', (req, res) => {
 //     res.end("Login Page");
 // });
 
-const generateToken = async (id) => {
+//Token Generation...
+const generateToken = async (id, role) => {
   // console.log(id.toString());
-  const token = await jwt.sign({ id }, process.env.SECRET_KEY, {
+  const token = await jwt.sign({ id, role }, process.env.SECRET_KEY, {
     expiresIn: "30d",
   });
   // console.log(token);
