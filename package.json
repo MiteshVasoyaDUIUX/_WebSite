@@ -23,6 +23,7 @@
     "mongodb": "^5.0.1",
     "mongoose": "^6.9.2",
     "nodemon": "^2.0.20",
-    "react-bootstrap": "^2.7.2"
+    "react-bootstrap": "^2.7.2",
+    "react-hooks": "^1.0.1"
   }
 }
