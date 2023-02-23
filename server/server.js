@@ -8,10 +8,12 @@ const PORT = 5555;
 const dbConnection = require("./db/db");
 const bodyParser = require("body-parser")
 const dotenv = require('dotenv');
+const cors = require('cors');
 
 dotenv.config();
 dbConnection();
 
+app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
