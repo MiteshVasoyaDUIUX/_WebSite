@@ -60,7 +60,7 @@ router.post("/register", async (req, res) => {
     const schema = new userSchema({
       name: name,
       email: email,
-      password: password,
+      password: hashedPassword,
       role: role,
     });
 

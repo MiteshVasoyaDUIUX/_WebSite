@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   protectLoginRegister,
   protectView,
-  protectDeletionUpdation
+  protectDeletionUpdation,
 } = require("../../middleware/authMiddleware");
 const orderSchema = require("../../schema/orderSchema");
 // const buyerSchema = require("../schema/buyerSchema");
@@ -17,7 +17,9 @@ router.get("/", protectLoginRegister, async (req, res) => {
 
   if (role === "buyer") {
     console.log("allOrders");
-    res.end("Buyer DashBoard");
+    res.json({
+      buyerId, role
+    });
   } else {
     res.end("Not Buyer...");
   }
