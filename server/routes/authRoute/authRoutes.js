@@ -8,7 +8,7 @@ const { protect } = require("../../middleware/authMiddleware");
 const buyerRoute = require("../buyerRoute/buyerRoute");
 
 //User Login...
-router.get("/login", async (req, res) => {
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const user = await userSchema.findOne({ email });
   console.log("In Login : ", user);
@@ -47,11 +47,11 @@ router.get("/login", async (req, res) => {
 //User Registration...
 router.post("/register", async (req, res) => {
   const { name, email, password, role } = req.body;
-  // console.log(name, email, password, role);
+  console.log(name, email, password, role);
 
   const salt = bcrypt.genSaltSync(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  // console.log("Salt : ", salt, "Hashed : ", hashedPassword);
+  console.log("Salt : ", salt, "Hashed : ", hashedPassword);
 
   const findUser = await userSchema.findOne({ email });
   if (findUser) {
@@ -60,7 +60,7 @@ router.post("/register", async (req, res) => {
     const schema = new userSchema({
       name: name,
       email: email,
-      password: hashedPassword,
+      password: password,
       role: role,
     });
 
