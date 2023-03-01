@@ -24,6 +24,10 @@ router.get("/allitems", protectDeletionUpdation, async (req, res) => {
   }
 });
 
+router.post("/additems", protectDeletionUpdation, (req, res) => {
+  
+});
+
 //Get list of all Users (including Vendors and Buyers)...
 router.get("/allusers", allUsers, async (req, res) => {
   const adminId = req.user.id;
