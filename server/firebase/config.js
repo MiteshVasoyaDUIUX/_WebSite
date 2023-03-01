@@ -6,6 +6,7 @@ const {
   sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
+  onAuthStateChanged
 } = require("firebase/auth");
 require("firebase/auth");
 require("firebase/firestore");
