@@ -13,13 +13,13 @@ const dotenv = require('dotenv').config();
 
 //Change all the value with .env file...
 const firebaseConfig = {
-  apiKey: "AIzaSyBg3ipoFFoeNxjHlUCrnv-d5PvBKTp8GW4",
-  authDomain: "shoppingsite-e25c4.firebaseapp.com",
-  projectId: "shoppingsite-e25c4",
-  storageBucket: "shoppingsite-e25c4.appspot.com",
-  messagingSenderId: "732026773703",
-  appId: "1:732026773703:web:76cf677cdb031afed29ee2",
-  measurementId: "G-57LD1F6T9V",
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIRE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+  measurementId: process.env.MEASUREMENT_ID,
 };
 
 console.log("FIREBASE API KEY : ", process.env.FIREBASE_API_KEY)
