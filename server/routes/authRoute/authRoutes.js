@@ -23,83 +23,86 @@ router.post("/login", async (req, res) => {
 
   try {
     const userFromFirebase = await verify.signInUser(email, password);
-    console.log("Firebase SignedIn User ID : ", userFromFirebase.uid);
-    // if (!) {
-    //   console.log(".....User Not Found...");
-    // } else {
-    //   const passwordCmp = await bcrypt.compareSync(password, user.password);
-    //   if (passwordCmp) {
-    //     const token = await generateToken(user._id, user.role);
 
-    //     if (user.role === "buyer") {
-    //       // console.log(`/buyer?token=${token}`);
-    //       res.redirect(`/buyer?token=${token}`);
-    //     } else if (user.role === "vendor") {
-    //       res.redirect(`/vendor?token=${token}`);
-    //     } else if (user.role === "admin") {
-    //       res.redirect(`/admin?token=${token}`);
-    //     }
-    //   } else {
-    //     res.end("Invalid Credentials...");
-    //   }
+    const userId = userFromFirebase.user.uid;
+
+    const findInMDB = await userSchema.find({ _id: userId });
+
+    const token = await generateToken(userId, findInMDB[0].role);
+    console.log("userId in Mongo : ", token);
+
+    if (findInMDB[0].role === "buyer") {
+      // console.log(`/buyer`);
+      res.redirect(`/buyer?token=${token}`);
+    } else if (findInMDB.role === "admin") {
+      res.redirect(`/admin?token=${token}`);
+    }
+    // else if (findInMDB.role === "vendor") {
+    //   res.redirect(`/vendor?token=${token}`);
     // }
   } catch (error) {
     console.log("Error If User Not ", error);
   }
 
-  //   res.json(user);
+  res.json();
 });
 
 //User Registration...
 router.post("/register", async (req, res) => {
-  const { name, email, password, role } = req.body;
-  // console.log(name, email, password, role);
-  const salt = bcrypt.genSaltSync(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  // console.log("Salt : ", salt, "Hashed : ", hashedPassword);
+  const { name, email, password, phoneNumber, role } = req.body;
+  // console.log("Data Entered By User : ", name, email, password, role);
   const findUser = await userSchema.findOne({ email });
-  // const authentication = firebase.createUserWithEmailAndPassword();
   if (findUser) {
     res.status(401).end();
   } else {
-    const schema = new userSchema({
-      name: name,
-      email: email,
-      password: hashedPassword,
-      role: role,
-      varificationStatus: "pending",
-    });
-
-    const userAdd = await schema.save();
-
-    const token = await generateToken(userAdd._id);
-
     try {
-      const userAuth = await verify.addUser(email, password);
+      const userAdd = await verify.addUser(email, password);
       const userVerification = await verify.verifyUser(
         email,
         actionCodeSettings
       );
 
-      const signedInUser = auth.currentUser;
+      console.log("Added User : ", userAdd.user.uid);
+      console.log("Phone Number : ", phoneNumber);
+
+      const uSchema = new userSchema({
+        _id: userAdd.user.uid,
+        name: name,
+        email: userAdd.user.email,
+        phoneNumber: phoneNumber,
+        role: role,
+        emailVerified: userAdd.user.emailVerified,
+      });
+
+      const addUserToMDB = await uSchema.save();
+      console.log("Add User to Mongo : ", addUserToMDB);
+
+      const userId = userAdd.user.uid;
+
+      const token =await generateToken(userId, role);
+      // const signedInUser = auth.currentUser;
 
       // setInterval(()=> {
       //   console.log("SignedIn User Verification Status : ", signedInUser.emailVerified);
       // }, 5000);
 
-      // console.log("Firebase Response : ", userAuth);
-      console.log("Firebase Use Verification Response : ", userVerification);
-      // console.log("isUseVerified : ", userAuth.UserImpl.reloadUserInfo);
+      if (uSchema.role === "buyer") {
+        // console.log(`/buyer`);
+        res.redirect(`/buyer?token=${token}`);
+      } else if (uSchema.role === "admin") {
+        res.redirect(`/admin?token=${token}`);
+      }
+
+      console.log("Firebase User Verification Response : ", userVerification);
     } catch (error) {
       console.log(error);
     }
 
-    console.log("Token : ", token);
-    res.json({
-      userAdd,
-      token: token,
-      verified: false,
-    });
+    // console.log("Token : ", token);
+    // res.json({
+    //   // userAdd,
+    //   // token: token,
+    // });
   }
 });
 

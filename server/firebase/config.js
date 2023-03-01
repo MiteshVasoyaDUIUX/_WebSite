@@ -9,7 +9,9 @@ const {
 } = require("firebase/auth");
 require("firebase/auth");
 require("firebase/firestore");
+const dotenv = require('dotenv').config();
 
+//Change all the value with .env file...
 const firebaseConfig = {
   apiKey: "AIzaSyBg3ipoFFoeNxjHlUCrnv-d5PvBKTp8GW4",
   authDomain: "shoppingsite-e25c4.firebaseapp.com",
@@ -20,6 +22,7 @@ const firebaseConfig = {
   measurementId: "G-57LD1F6T9V",
 };
 
+console.log("FIREBASE API KEY : ", process.env.FIREBASE_API_KEY)
 firebase.initializeApp(firebaseConfig);
 
 const auth = getAuth();
