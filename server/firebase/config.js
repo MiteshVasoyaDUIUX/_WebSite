@@ -4,6 +4,8 @@ const {
   getAuth,
   sendSignInLinkToEmail,
   sendEmailVerification,
+  signInWithEmailAndPassword,
+  signOut,
 } = require("firebase/auth");
 require("firebase/auth");
 require("firebase/firestore");
@@ -22,13 +24,18 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = getAuth();
 
+//Create User...
 exports.addUser = (email, password) =>
   createUserWithEmailAndPassword(auth, email, password);
 
+// Verify User with Link Sent to Email...
 exports.verifyUser = (actionCodeSettings) =>
   sendEmailVerification(auth.currentUser, {
-    url: 'http://localhost:3000/',
-    handleCodeInApp: true
-  })
-    .then((data) => console.log(data))
-    .catch((e) => console.log("Error : ", e));
+    url: "http://localhost:3000/",
+    handleCodeInApp: true,
+  }).catch((e) => console.log("Error : ", e));
+
+//SignIn User...
+exports.signInUser = (email, password) =>
+  signInWithEmailAndPassword(auth, email, password);
+

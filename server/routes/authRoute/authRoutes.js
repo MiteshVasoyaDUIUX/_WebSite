@@ -19,38 +19,34 @@ const actionCodeSettings = {
 //User Login...
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const user = await userSchema.findOne({ email });
+  // const user = await userSchema.findOne({ email });
 
-  console.log("In Login : ", user);
+  try {
+    const userFromFirebase = await verify.signInUser(email, password);
+    console.log("Firebase SignedIn User ID : ", userFromFirebase.uid);
+    // if (!) {
+    //   console.log(".....User Not Found...");
+    // } else {
+    //   const passwordCmp = await bcrypt.compareSync(password, user.password);
+    //   if (passwordCmp) {
+    //     const token = await generateToken(user._id, user.role);
 
-  if (!user) {
-    res.end("User Not Found...");
-  } else {
-    const passwordCmp = await bcrypt.compareSync(password, user.password);
-    if (passwordCmp) {
-      const token = await generateToken(user._id, user.role);
-      // console.log("In Login : ", token);
-      // console.log(
-      //   "----------------------------------------------------------------------------------"
-      // );
-      // console.log({
-      //   Email: user.email,
-      //   role: user.role,
-      //   token: token,
-      // });
-
-      if (user.role === "buyer") {
-        // console.log(`/buyer?token=${token}`);
-        res.redirect(`/buyer?token=${token}`);
-      } else if (user.role === "vendor") {
-        res.redirect(`/vendor?token=${token}`);
-      } else if (user.role === "admin") {
-        res.redirect(`/admin?token=${token}`);
-      }
-    } else {
-      res.end("Invalid Credentials...");
-    }
+    //     if (user.role === "buyer") {
+    //       // console.log(`/buyer?token=${token}`);
+    //       res.redirect(`/buyer?token=${token}`);
+    //     } else if (user.role === "vendor") {
+    //       res.redirect(`/vendor?token=${token}`);
+    //     } else if (user.role === "admin") {
+    //       res.redirect(`/admin?token=${token}`);
+    //     }
+    //   } else {
+    //     res.end("Invalid Credentials...");
+    //   }
+    // }
+  } catch (error) {
+    console.log("Error If User Not ", error);
   }
+
   //   res.json(user);
 });
 
@@ -80,7 +76,17 @@ router.post("/register", async (req, res) => {
 
     try {
       const userAuth = await verify.addUser(email, password);
-      const userVerification = await verify.verifyUser(email, actionCodeSettings);
+      const userVerification = await verify.verifyUser(
+        email,
+        actionCodeSettings
+      );
+
+      const signedInUser = auth.currentUser;
+
+      // setInterval(()=> {
+      //   console.log("SignedIn User Verification Status : ", signedInUser.emailVerified);
+      // }, 5000);
+
       // console.log("Firebase Response : ", userAuth);
       console.log("Firebase Use Verification Response : ", userVerification);
       // console.log("isUseVerified : ", userAuth.UserImpl.reloadUserInfo);
