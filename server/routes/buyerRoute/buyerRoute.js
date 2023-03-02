@@ -14,11 +14,12 @@ const itemSchema = require("../../schema/itemSchema");
 router.get("/", protectLoginRegister, async (req, res) => {
   const buyerId = req.user.id;
   const role = req.user.role;
+  const token = req.token;
 
   if (role === "buyer") {
     console.log("allOrders");
     res.json({
-      buyerId, role
+      buyerId, role, token
     });
   } else {
     res.end("Not Buyer...");

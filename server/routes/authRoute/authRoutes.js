@@ -34,7 +34,8 @@ router.post("/login", async (req, res) => {
     if (findInMDB[0].role === "buyer") {
       // console.log(`/buyer`);
       res.redirect(`/buyer?token=${token}`);
-    } else if (findInMDB.role === "admin") {
+    } else if (findInMDB[0].role === "admin") {
+      console.log("Admin Panel");
       res.redirect(`/admin?token=${token}`);
     }
     // else if (findInMDB.role === "vendor") {

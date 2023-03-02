@@ -6,7 +6,18 @@ const userSchema = require("../../schema/userSchema");
 
 //Admin Dashboard...
 router.get("/", protectLoginRegister, (req, res) => {
-    res.end("Admin Dashboard");
+  const adminId = req.user.id;
+  const role = req.user.role;
+  const token = req.token;
+
+    if (role === "admin") {
+    console.log("Token In Auth Route : ", token);
+    res.json({
+      adminId, role, token
+    });
+  } else {
+    res.end("Not Admin...");
+  }
 });
 
 //Get list of all Items by all Vendors...

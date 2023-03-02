@@ -12,16 +12,14 @@ const protectLoginRegister = asyncHandler(async (req, res, next) => {
       token = req.query.token;
 
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
-      // console.log("In Auth Path : ", decoded);
+      console.log("In Auth Path : ", decoded.role, decoded.id);
 
       req.user = await userSchema.findById(decoded.id).select("-password");
-      // console.log("In Auth Path : ", req.user);
+      req.token = token;
+      console.log("Token : ", req.token);
       next();
     } catch (error) {
-      res.json({
-        message: "Not Authorized Person",
-        error: error,
-      });
+      res.status(401).end();
     }
   }
 
