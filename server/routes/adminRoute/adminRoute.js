@@ -35,8 +35,8 @@ router.get("/allitems", protectDeletionUpdation, async (req, res) => {
   }
 });
 
-router.post("/additems", protectDeletionUpdation, (req, res) => {
-  
+router.post("/addproducts", protectDeletionUpdation, (req, res) => {
+  console.log(req.body);
 });
 
 //Get list of all Users (including Vendors and Buyers)...
