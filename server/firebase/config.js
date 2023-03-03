@@ -6,11 +6,11 @@ const {
   sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
+  onAuthStateChanged,
 } = require("firebase/auth");
 require("firebase/auth");
 require("firebase/firestore");
-const dotenv = require('dotenv').config();
+const dotenv = require("dotenv").config();
 
 //Change all the value with .env file...
 const firebaseConfig = {
@@ -23,8 +23,7 @@ const firebaseConfig = {
   measurementId: process.env.MEASUREMENT_ID,
 };
 
-console.log("FIREBASE API KEY : ", process.env.FIREBASE_API_KEY)
-firebase.initializeApp(firebaseConfig);
+const db = firebase.initializeApp(firebaseConfig);
 
 const auth = getAuth();
 
@@ -42,4 +41,8 @@ exports.verifyUser = (actionCodeSettings) =>
 //SignIn User...
 exports.signInUser = (email, password) =>
   signInWithEmailAndPassword(auth, email, password);
+
+// module.exports = db;
+
+
 

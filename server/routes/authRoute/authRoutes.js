@@ -35,14 +35,14 @@ router.post("/login", async (req, res) => {
       // console.log(`/buyer`);
       res.redirect(`/buyer?token=${token}`);
     } else if (findInMDB[0].role === "admin") {
-      console.log("Admin Panel");
+      // console.log("Admin Panel", findInMDB);
       res.redirect(`/admin?token=${token}`);
     }
     // else if (findInMDB.role === "vendor") {
     //   res.redirect(`/vendor?token=${token}`);
     // }
   } catch (error) {
-    console.log("Error If User Not ", error);
+    console.log("Error : ", error);
   }
 
   res.json();

@@ -1,8 +1,24 @@
 const express = require("express");
-const { protectLoginRegister, protectView, protectDeletionUpdation, allUsers } = require("../../middleware/authMiddleware");
+const {
+  protectLoginRegister,
+  protectView,
+  protectDeletionUpdation,
+  allUsers,
+} = require("../../middleware/authMiddleware");
 const router = express.Router();
 const itemSchema = require("../../schema/itemSchema");
 const userSchema = require("../../schema/userSchema");
+const {
+  getStorage,
+  ref,
+  uploadBytes,
+  listAll,
+  deleteObject,
+} = require("firebase/storage");
+const storage = getStorage();
+const multer = require("multer");
+const memoryStorage = multer.memoryStorage();
+const upload = multer({ memoryStorage });
 
 //Admin Dashboard...
 router.get("/", protectLoginRegister, (req, res) => {
@@ -10,10 +26,12 @@ router.get("/", protectLoginRegister, (req, res) => {
   const role = req.user.role;
   const token = req.token;
 
-    if (role === "admin") {
+  if (role === "admin") {
     console.log("Token In Auth Route : ", token);
     res.json({
-      adminId, role, token
+      adminId,
+      role,
+      token,
     });
   } else {
     res.end("Not Admin...");
@@ -22,7 +40,7 @@ router.get("/", protectLoginRegister, (req, res) => {
 
 //Get list of all Items by all Vendors...
 router.get("/allitems", protectDeletionUpdation, async (req, res) => {
-  console.log("request : ", req)
+  console.log("request : ", req);
   const vendorId = req.user.id;
   const role = req.user.role;
 
@@ -35,8 +53,17 @@ router.get("/allitems", protectDeletionUpdation, async (req, res) => {
   }
 });
 
-router.post("/addproducts", protectDeletionUpdation, (req, res) => {
-  console.log(req.body);
+router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
+  const image = req.body.prodImage;
+  const imageStorageRef = ref(storage, "/image/image-1.jpg");
+  // uploadBytes(imageStorageRef, image);
+
+  const file = imageStorageRef.put();
+  console.log("Image : ", image[0]);
+  console.log("File : ", file);
+  console.log("Image Ref : ", imageStorageRef.fullPath);
+
+  // console.log("Upload : ", upload);
 });
 
 //Get list of all Users (including Vendors and Buyers)...
@@ -44,7 +71,7 @@ router.get("/allusers", allUsers, async (req, res) => {
   const adminId = req.user.id;
   const role = req.user.role;
 
-  if(role === 'admin'){
+  if (role === "admin") {
     const items = await userSchema.find();
     console.log("req.user.role : ", req.user.role);
     if (items.length == 0) {
@@ -52,24 +79,23 @@ router.get("/allusers", allUsers, async (req, res) => {
     } else {
       res.json(items);
     }
-  } else{
+  } else {
     res.end("Not Admin. If You are, Contact another Admin...");
   }
-    
 });
 
 router.delete("/item/:id", protectDeletionUpdation, async (req, res) => {
   const adminId = req.user.id;
   const role = req.user.role;
 
-    const item = await itemSchema.findByIdAndDelete(req.params.id);
-    // console.log("req.user.role : ", req.user.role);
+  const item = await itemSchema.findByIdAndDelete(req.params.id);
+  // console.log("req.user.role : ", req.user.role);
 
-    if (!item) {
-      console.log("No items found");
-    } else {
-      res.json(item);
-    }
+  if (!item) {
+    console.log("No items found");
+  } else {
+    res.json(item);
+  }
 });
 
 module.exports = router;

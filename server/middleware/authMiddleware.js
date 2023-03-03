@@ -16,7 +16,7 @@ const protectLoginRegister = asyncHandler(async (req, res, next) => {
 
       req.user = await userSchema.findById(decoded.id).select("-password");
       req.token = token;
-      console.log("Token : ", req.token);
+      // console.log("Token : ", req.token);
       next();
     } catch (error) {
       res.status(401).end();
@@ -73,12 +73,12 @@ const protectDeletionUpdation = asyncHandler(async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
-      console.log("In Auth Path : ", decoded);
+      // console.log("In Auth Path : ", decoded);
 
       req.user = await userSchema.findById(decoded.id).select("-password");
 
       if (req.user.role === "admin" || req.user.role === "vendor") {
-        console.log("In Auth Path : ", req.user.role);
+        // console.log("In Auth Path : ", req.user.role);
         next();
       } else {
         console.log("You are not valid User...");
@@ -117,7 +117,7 @@ const allUsers = asyncHandler(async (req, res, next) => {
       req.user = await userSchema.findById(decoded.id).select("-password");
 
       if (req.user.role === "admin") {
-        console.log("In Auth Path : ", req.user.role);
+        // console.log("In Auth Path : ", req.user.role);
         next();
       } else {
         console.log("You are not valid User...");
