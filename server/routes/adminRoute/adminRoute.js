@@ -43,18 +43,11 @@ router.get("/", protectLoginRegister, (req, res) => {
 });
 
 //Get list of all Items by all Vendors...
-router.get("/allitems", protectDeletionUpdation, async (req, res) => {
-  console.log("request : ", req);
-  const vendorId = req.user.id;
-  const role = req.user.role;
-
-  const items = await productSchema.find();
-  console.log("req.user.role : ", req.user.role);
-  if (items.length == 0) {
-    console.log("No items found");
-  } else {
-    res.json(items);
-  }
+router.get("/allproducts", protectDeletionUpdation, async (req, res) => {
+  
+  const allProducts = await productSchema.find();
+  console.log(allProducts);
+  res.json(allProducts);
 });
 
 router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
