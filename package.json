@@ -26,6 +26,7 @@
     "firebase": "^9.17.1",
     "firebase-admin": "^11.5.0",
     "framer-motion": "^9.1.6",
+    "image-to-base64": "^2.2.0",
     "jsonwebtoken": "^9.0.0",
     "mongodb": "^5.0.1",
     "mongoose": "^6.9.2",

@@ -1,4 +1,6 @@
 const firebase = require("firebase/app");
+const admin = require('firebase-admin');
+
 const {
   createUserWithEmailAndPassword,
   getAuth,
@@ -42,7 +44,7 @@ exports.verifyUser = (actionCodeSettings) =>
 exports.signInUser = (email, password) =>
   signInWithEmailAndPassword(auth, email, password);
 
-// module.exports = db;
+module.exports = db;
 
 
 

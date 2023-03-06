@@ -8,7 +8,7 @@ const {
 const orderSchema = require("../../schema/orderSchema");
 // const buyerSchema = require("../schema/buyerSchema");
 const { route } = require("../authRoute/authRoutes");
-const itemSchema = require("../../schema/itemSchema");
+const itemSchema = require("../../schema/productSchema");
 
 //Dashboard of User...
 router.get("/", protectLoginRegister, async (req, res) => {

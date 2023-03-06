@@ -1,7 +1,7 @@
 const express = require("express");
 const { protectLoginRegister, protectDeletionUpdation } = require("../../middleware/authMiddleware");
 const router = express.Router();
-const itemSchema = require("../../schema/itemSchema");
+const itemSchema = require("../../schema/productSchema");
 
 //Vendor's Dashboard...
 router.get("/", protectLoginRegister, (req, res) => {
