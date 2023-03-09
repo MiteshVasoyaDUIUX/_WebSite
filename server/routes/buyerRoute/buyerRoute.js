@@ -12,14 +12,16 @@ const itemSchema = require("../../schema/productSchema");
 
 //Dashboard of User...
 router.get("/", protectLoginRegister, async (req, res) => {
-  const buyerId = req.user.id;
+  const userId = req.user.id;
   const role = req.user.role;
   const token = req.token;
 
   if (role === "buyer") {
     console.log("allOrders");
     res.json({
-      buyerId, role, token
+      userId,
+      role,
+      token,
     });
   } else {
     res.end("Not Buyer...");
@@ -28,12 +30,12 @@ router.get("/", protectLoginRegister, async (req, res) => {
 
 //Get all orders placed by the user...
 router.get("/orders", protectView, async (req, res) => {
-  const buyerId = req.user.id;
+  const userId = req.user.id;
   const role = req.user.role;
 
   try {
     if (role === "buyer") {
-      const orders = await orderSchema.find({ buyerId });
+      const orders = await orderSchema.find({ userId });
       res.json(orders);
     } else {
       res.end("Not Buyer");
@@ -45,25 +47,30 @@ router.get("/orders", protectView, async (req, res) => {
 
 //Call this when User select item and Pass ItemId in Params with URL...
 router.post("/placeorder", protectView, async (req, res) => {
-  const buyerId = req.user.id;
+  const userId = req.user.id;
   const role = req.user.role;
 
   //Below itemId will be fetched form the Req. from front-end...
-  const itemId = "63f30e1bce98d64628d5d874";
-  const item = await itemSchema.findById(itemId).select("-vendorId");
-  const itemName = item.name;
-  const itemPrice = item.price;
+  const itemId = "6406c1db284b5bc3940a74e8";
+  const item = await itemSchema.findById(itemId);
+  const itemPrice = item.prodPrice;
   const quantity = req.body.quantity;
-  console.log("itemName : ", item);
 
-  if (role === "buyer") {
+  //Also set status and deliveryType...
+  const status = "Success";
+  const deliveryType = "COD";
+  // console.log("itemName : ", item);
+
+  if (role !== "buyer") {
     try {
       const order = new orderSchema({
-        buyerId,
-        itemName: itemName,
+        userId,
+        productId: itemId,
         quantity,
+        status,
         price: itemPrice,
-        totalBill: quantity * itemPrice,
+        billAmount: quantity * itemPrice,
+        deliveryType,
       });
 
       const orderPlaced = await order.save();
