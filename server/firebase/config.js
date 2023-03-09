@@ -44,7 +44,7 @@ exports.verifyUser = (actionCodeSettings) =>
 exports.signInUser = (email, password) =>
   signInWithEmailAndPassword(auth, email, password);
 
-module.exports = db;
+// module.exports = db;
 
 
 

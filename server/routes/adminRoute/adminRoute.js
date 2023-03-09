@@ -8,7 +8,7 @@ const {
   allUsers,
   put,
 } = require("../../middleware/authMiddleware");
-const productSchema = require('../../schema/productSchema');
+const productSchema = require("../../schema/productSchema");
 const userSchema = require("../../schema/userSchema");
 const imageToBase = require("image-to-base64");
 
@@ -19,6 +19,7 @@ const {
   listAll,
   deleteObject,
 } = require("firebase/storage");
+const orderSchema = require("../../schema/orderSchema");
 
 const storage = getStorage();
 const memoryStorage = multer.memoryStorage();
@@ -44,7 +45,6 @@ router.get("/", protectLoginRegister, (req, res) => {
 
 //Get list of all Items by all Vendors...
 router.get("/allproducts", protectDeletionUpdation, async (req, res) => {
-  
   const allProducts = await productSchema.find();
   console.log(allProducts);
   res.json(allProducts);
@@ -99,19 +99,25 @@ router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
 
 //Get list of all Users (including Vendors and Buyers)...
 router.get("/allusers", allUsers, async (req, res) => {
-  const adminId = req.user.id;
-  const role = req.user.role;
-
-  if (role === "admin") {
-    const items = await userSchema.find();
-    console.log("req.user.role : ", req.user.role);
-    if (items.length == 0) {
-      console.log("Item Not found");
-    } else {
-      res.json(items);
-    }
+  const usersList = await userSchema.find();
+  // console.log("usersList : ", usersList.length);
+  if (usersList.length == 0) {
+    console.log("Users Not found");
   } else {
-    res.end("Not Admin. If You are, Contact another Admin...");
+    res.json(usersList);
+  }
+});
+
+//Temporarily allUsers middleware is used...
+router.post("/orderuserwise", allUsers, async (req, res) => {
+  // const userId = req.body.userId.userId;
+  // console.log('req.body', userId);
+  const ordersList = await orderSchema.find().select('-productId');
+  console.log("Order List By User Data : ", ordersList);
+  if(ordersList) {
+    res.json(ordersList);
+  } else{
+    res.json();
   }
 });
 
