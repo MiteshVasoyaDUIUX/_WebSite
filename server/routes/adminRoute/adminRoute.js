@@ -112,26 +112,45 @@ router.get("/allusers", allUsers, async (req, res) => {
 router.post("/orderuserwise", allUsers, async (req, res) => {
   // const userId = req.body.userId.userId;
   // console.log('req.body', userId);
-  const ordersList = await orderSchema.find().select('-productId');
+  const ordersList = await orderSchema.find().select("-productId");
   console.log("Order List By User Data : ", ordersList);
-  if(ordersList) {
+  if (ordersList) {
     res.json(ordersList);
-  } else{
+  } else {
     res.json();
   }
 });
 
-router.delete("/item/:id", protectDeletionUpdation, async (req, res) => {
+router.delete("/product/:id", protectDeletionUpdation, async (req, res) => {
   const adminId = req.user.id;
   const role = req.user.role;
 
-  const item = await productSchema.findByIdAndDelete(req.params.id);
+  console.log("Attempt to delete the product with 'id': ", req.params.id);
+  const product = await productSchema.findByIdAndDelete(req.params.id);
   // console.log("req.user.role : ", req.user.role);
 
-  if (!item) {
+  if (!product) {
     console.log("No items found");
   } else {
-    res.json(item);
+    res.json(product);
+  }
+});
+
+router.put("/product/:id", protectDeletionUpdation, async (req, res) => {
+  const updatedData = req.body;
+  // console.log("Attempt to Update the product with 'id': ", newData);
+  const updatedProduct = await productSchema.findByIdAndUpdate(
+    req.params.id,
+    updatedData
+  );
+
+  // console.log("Product Update : ", updatedProduct);
+  // // console.log("req.user.role : ", req.user.role);
+
+  if (!updatedProduct) {
+    console.log("No items found");
+  } else {
+    res.status(200).json(updatedProduct);
   }
 });
 
