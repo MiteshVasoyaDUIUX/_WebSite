@@ -46,7 +46,7 @@ router.get("/", protectLoginRegister, (req, res) => {
 //Get list of all Items by all Vendors...
 router.get("/allproducts", protectDeletionUpdation, async (req, res) => {
   const allProducts = await productSchema.find();
-  console.log(allProducts);
+  // console.log(allProducts);
   res.json(allProducts);
 });
 
