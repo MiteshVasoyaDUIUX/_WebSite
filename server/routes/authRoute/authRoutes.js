@@ -7,7 +7,11 @@ const jwt = require("jsonwebtoken");
 const { protect } = require("../../middleware/authMiddleware");
 const buyerRoute = require("../buyerRoute/buyerRoute");
 const verify = require("../../firebase/config");
-const { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } = require("firebase/auth");
+const {
+  getAuth,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+} = require("firebase/auth");
 
 const auth = getAuth();
 
@@ -80,7 +84,7 @@ router.post("/register", async (req, res) => {
 
       const userId = userAdd.user.uid;
 
-      const token =await generateToken(userId, role);
+      const token = await generateToken(userId, role);
 
       //Checking for Email Verification Status...
       // setInterval(()=> {
@@ -100,12 +104,6 @@ router.post("/register", async (req, res) => {
     } catch (error) {
       console.log(error);
     }
-
-    // console.log("Token : ", token);
-    // res.json({
-    //   // userAdd,
-    //   // token: token,
-    // });
   }
 });
 
