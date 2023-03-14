@@ -41,7 +41,10 @@ const productSchema = new mongoose.Schema({
         required : false,
         default : 'NA'
     },
-
+    date : {
+        type : String,
+        required : true,
+    }
   });
 
   module.exports =  mongoose.model('product', productSchema);

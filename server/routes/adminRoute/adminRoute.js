@@ -72,6 +72,7 @@ router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
     prodPrice,
     prodImage,
   } = req.body;
+
   console.log(
     prodName,
     prodDesc,
@@ -81,6 +82,9 @@ router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
     prodImage
   );
 
+  const createDate = new Date(Date.now());
+  const date = createDate.toLocaleString('en-Uk', { timeZone: 'UTC' }).split(",")[0];
+
   const newProduct = new productSchema({
     prodName,
     prodDesc,
@@ -88,6 +92,7 @@ router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
     prodQuantity,
     prodPrice,
     prodImage,
+    date,
   });
 
   const productAdd = await newProduct.save();
