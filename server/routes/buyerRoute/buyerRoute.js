@@ -4,11 +4,13 @@ const {
   protectLoginRegister,
   protectView,
   protectDeletionUpdation,
+  protectBuyer,
 } = require("../../middleware/authMiddleware");
 const orderSchema = require("../../schema/orderSchema");
 // const buyerSchema = require("../schema/buyerSchema");
 const { route } = require("../authRoute/authRoutes");
 const itemSchema = require("../../schema/productSchema");
+const userSchema = require("../../schema/userSchema");
 
 //Dashboard of User...
 router.get("/", protectLoginRegister, async (req, res) => {
@@ -25,6 +27,32 @@ router.get("/", protectLoginRegister, async (req, res) => {
     });
   } else {
     res.end("Not Buyer...");
+  }
+});
+
+router.put("/addtocart/:id", protectBuyer, async (req, res) => {
+  const productId = req.body.productId;
+  const id = req.params.id;
+  const token = req.token;
+
+  console.log("PRODUCT ID", productId);
+
+  const response = await userSchema.findById(id).select("cart");
+  const cart = response.cart;
+  const isAddedtoCard = cart.includes(productId);
+
+  if (isAddedtoCard) {
+    cart.splice(cart.indexOf(productId), 1);
+    const addedToCart = await userSchema.findByIdAndUpdate(id, {
+      cart: cart,
+    });
+    console.log("Updated Product : ", cart);
+  } else {
+    cart.push(productId);
+    const addedToCart = await userSchema.findByIdAndUpdate(id, {
+      cart: cart,
+    });
+    console.log("Added To Cart : ", addedToCart);
   }
 });
 

@@ -61,6 +61,37 @@ const protectView = asyncHandler(async (req, res, next) => {
   }
 });
 
+const protectBuyer = asyncHandler(async (req, res, next) => {
+  let token;
+
+  console.log("Params : ",req.headers.authorization);
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+
+      const decoded = jwt.verify(token, process.env.SECRET_KEY);
+      console.log("In Auth Path : ", decoded);
+
+      req.user = await userSchema.findById(decoded.id).select("-password");
+      // console.log("In Auth Path : ", req.user);
+      next();
+    } catch (error) {
+      res.json({
+        message: "Not Authorized Person",
+        error: error,
+      });
+    }
+  }
+
+  if (!token) {
+    res.status(401);
+    throw new Error("Not authorized, no token");
+  }
+});
+
 const protectDeletionUpdation = asyncHandler(async (req, res, next) => {
   let token;
 
@@ -150,4 +181,5 @@ module.exports = {
   protectView,
   protectDeletionUpdation,
   allUsers,
+  protectBuyer,
 };

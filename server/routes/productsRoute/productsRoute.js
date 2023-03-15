@@ -6,11 +6,12 @@ const productSchema = require("../../schema/productSchema");
 //Get all orders placed by the user...
 router.get("/", async (req, res) => {
   const products = await productSchema.find();
-  
-  if(products) {
-      res.json(products);
-  } else{
-      res.status(404)
+
+  if (products) {
+    // console.log(products);
+    res.json(products);
+  } else {
+    res.status(404);
   }
 });
 
