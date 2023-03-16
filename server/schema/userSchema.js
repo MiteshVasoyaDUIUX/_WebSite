@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Array,
     required : false,
   },
+  wishlist: {
+    type: mongoose.Schema.Types.Array,
+    required : false,
+  },
 });
 
 module.exports = mongoose.model("userSchema", userSchema);

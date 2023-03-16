@@ -14,14 +14,14 @@ const userSchema = require("../../schema/userSchema");
 
 //Dashboard of User...
 router.get("/", protectLoginRegister, async (req, res) => {
-  const userId = req.user.id;
+  const user = req.user;
   const role = req.user.role;
   const token = req.token;
 
   if (role === "buyer") {
     console.log("allOrders");
     res.json({
-      userId,
+      user,
       role,
       token,
     });
@@ -33,27 +33,107 @@ router.get("/", protectLoginRegister, async (req, res) => {
 router.put("/addtocart/:id", protectBuyer, async (req, res) => {
   const productId = req.body.productId;
   const id = req.params.id;
-  const token = req.token;
+  // const token = req.token;
 
   console.log("PRODUCT ID", productId);
 
   const response = await userSchema.findById(id).select("cart");
-  const cart = response.cart;
-  const isAddedtoCard = cart.includes(productId);
 
-  if (isAddedtoCard) {
-    cart.splice(cart.indexOf(productId), 1);
-    const addedToCart = await userSchema.findByIdAndUpdate(id, {
-      cart: cart,
-    });
-    console.log("Updated Product : ", cart);
-  } else {
+  console.log("Cart Response : ", response.cart);
+
+  if (!response) {
+    let cart = [];
     cart.push(productId);
+    console.log("Cart : ", cart);
+
     const addedToCart = await userSchema.findByIdAndUpdate(id, {
-      cart: cart,
+      cart,
     });
     console.log("Added To Cart : ", addedToCart);
+  } else {
+    const inCart = response.cart;
+
+    const isAddedtoCard = inCart.includes(productId);
+
+    if (isAddedtoCard) {
+      inCart.splice(inCart.indexOf(productId), 1);
+      const addedToCart = await userSchema.findByIdAndUpdate(id, {
+        cart: inCart,
+      });
+      console.log("Updated Cart : ", addedToCart);
+    } else {
+      inCart.push(productId);
+      const addedToCart = await userSchema.findByIdAndUpdate(id, {
+        cart: inCart,
+      });
+      console.log("Updated Cart : ", addedToCart);
+    }
   }
+});
+
+router.put("/addtowishlist/:id", protectBuyer, async (req, res) => {
+  const productId = req.body.productId;
+  const id = req.params.id;
+  // const token = req.token;
+
+  console.log("PRODUCT ID", productId);
+
+  const response = await userSchema.findById(id).select("wishlist");
+
+  // console.log("Wishlist Response : ", response.wishlist);
+
+  if (!response) {
+    let wishlist = [];
+    wishlist.push(productId);
+    console.log("Wishlist : ", wishlist);
+
+    const addedToWishlist = await userSchema.findByIdAndUpdate(id, {
+      wishlist,
+    });
+    const newWishList = await userSchema.findById(id).select("wishlist");
+    console.log("New WishList : ", newWishList.wishlist);
+
+    res.json(newWishList.wishlist);
+  } else {
+    const inWishlist = response.wishlist;
+
+    const isAddedtoWishlist = inWishlist.includes(productId);
+
+    if (isAddedtoWishlist) {
+      inWishlist.splice(inWishlist.indexOf(productId), 1);
+      const addedToWishlist = await userSchema.findByIdAndUpdate(id, {
+        wishlist: inWishlist,
+      });
+
+      const newWishList = await userSchema.findById(id).select("wishlist");
+      console.log("New WishList : ", newWishList.wishlist);
+
+      res.json(newWishList.wishlist);
+    } else {
+      inWishlist.push(productId);
+      const addedToWishlist = await userSchema.findByIdAndUpdate(id, {
+        wishlist: inWishlist,
+      });
+
+      const newWishList = await userSchema.findById(id).select("wishlist");
+      console.log("New WishList : ", newWishList.wishlist);
+
+      res.json(newWishList.wishlist);
+    }
+  }
+});
+
+router.get("/fetchwishlist/:id", protectBuyer, async (req, res) => {
+  // const productId = req.body.productId;
+  const id = req.params.id;
+  // const token = req.token;
+
+  console.log("USER ID", id);
+
+  const wishlist = await userSchema.findById(id).select("wishlist");
+  console.log("Users Wishlist : ", wishlist.wishlist);
+
+  res.json(wishlist.wishlist);
 });
 
 //Get all orders placed by the user...

@@ -14,7 +14,7 @@ const protectLoginRegister = asyncHandler(async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
       console.log("In Auth Path : ", decoded.role, decoded.id);
 
-      req.user = await userSchema.findById(decoded.id).select("-password");
+      req.user = await userSchema.findById(decoded.id).select("-password, -cart");
       req.token = token;
       // console.log("Token : ", req.token);
       next();

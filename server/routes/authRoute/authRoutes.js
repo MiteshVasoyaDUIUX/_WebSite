@@ -36,7 +36,7 @@ router.post("/login", async (req, res) => {
     console.log("userId in Mongo : ", token);
 
     if (findInMDB[0].role === "buyer") {
-      // console.log(`/buyer`);
+      console.log(`/buyer`);
       res.redirect(`/buyer?token=${token}`);
     } else if (findInMDB[0].role === "admin") {
       // console.log("Admin Panel", findInMDB);
@@ -94,8 +94,8 @@ router.post("/register", async (req, res) => {
       // }, 5000);
 
       if (uSchema.role === "buyer") {
-        // console.log(`/buyer`);
-        res.redirect(`/buyer?token=${token}`);
+        console.log(`/buyer`);
+        
       } else if (uSchema.role === "admin") {
         res.redirect(`/admin?token=${token}`);
       }
