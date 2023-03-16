@@ -41,7 +41,7 @@ router.put("/addtocart/:id", protectBuyer, async (req, res) => {
 
   console.log("Cart Response : ", response.cart);
 
-  if (!response) {
+  if (response.cart.length === 0) {
     let cart = [];
     cart.push(productId);
     console.log("Cart : ", cart);
@@ -49,25 +49,22 @@ router.put("/addtocart/:id", protectBuyer, async (req, res) => {
     const addedToCart = await userSchema.findByIdAndUpdate(id, {
       cart,
     });
-    console.log("Added To Cart : ", addedToCart);
+
+    const newCart = await userSchema.findById(id).select("cart");
+
+    // console.log("Added To Cart : ", newCart.cart);
+    res.json(newCart.cart);
   } else {
     const inCart = response.cart;
 
-    const isAddedtoCard = inCart.includes(productId);
+    inCart.push(productId);
+    const addedToCart = await userSchema.findByIdAndUpdate(id, {
+      cart: inCart,
+    });
+    const newCart = await userSchema.findById(id).select("cart");
 
-    if (isAddedtoCard) {
-      inCart.splice(inCart.indexOf(productId), 1);
-      const addedToCart = await userSchema.findByIdAndUpdate(id, {
-        cart: inCart,
-      });
-      console.log("Updated Cart : ", addedToCart);
-    } else {
-      inCart.push(productId);
-      const addedToCart = await userSchema.findByIdAndUpdate(id, {
-        cart: inCart,
-      });
-      console.log("Updated Cart : ", addedToCart);
-    }
+    // console.log("Added To Cart : ", newCart.cart);
+    res.json(newCart.cart);
   }
 });
 
