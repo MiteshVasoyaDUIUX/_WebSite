@@ -20,24 +20,18 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    price: {
+    totalAmount: {
       type: Number,
       required: true,
     },
-    billAmount: {
-      type: Number,
-      required: true,
+    paymentType : {
+      type : String,
+      required : true
     },
-    deliveryType : {
+    orderDate : {
       type : String,
       required : true
     }
-  },
-  {
-    timestamps: {
-      createdAt: false,
-      updatedAt: "orderDate",
-    },
   }
 );
 

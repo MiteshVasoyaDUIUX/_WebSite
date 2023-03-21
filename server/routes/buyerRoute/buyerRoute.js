@@ -154,38 +154,38 @@ router.get("/orders", protectView, async (req, res) => {
 router.post("/placeorder", protectView, async (req, res) => {
   const userId = req.user.id;
   const role = req.user.role;
+  const checkoutData = req.body;
+  const productId = checkoutData.productId;
+  const quantity = checkoutData.quantity;
+  const status = "pending";
+  const totalAmount = checkoutData.productPrice * checkoutData.quantity;
+  const paymentType = checkoutData.paymentOption;
 
-  //Below itemId will be fetched form the Req. from front-end...
-  const itemId = "6406c1db284b5bc3940a74e8";
-  const item = await itemSchema.findById(itemId);
-  const itemPrice = item.prodPrice;
-  const quantity = req.body.quantity;
+  const date = new Date();
 
-  //Also set status and deliveryType...
-  const status = "Success";
-  const deliveryType = "COD";
-  // console.log("itemName : ", item);
+  const orderDate =
+    String(date.getDate()) +
+    "/" +
+    String(date.getMonth()) +
+    "/" +
+    String(date.getFullYear());
 
-  if (role !== "buyer") {
-    try {
-      const order = new orderSchema({
-        userId,
-        productId: itemId,
-        quantity,
-        status,
-        price: itemPrice,
-        billAmount: quantity * itemPrice,
-        deliveryType,
-      });
+  const orderData = new orderSchema({
+    userId,
+    productId,
+    quantity,
+    status,
+    totalAmount,
+    paymentType,
+    orderDate,
+  });
 
-      const orderPlaced = await order.save();
+  const orderAdd = await orderData.save();
 
-      res.json(orderPlaced);
-    } catch (error) {
-      console.log(error);
-    }
-  } else {
-    res.end("Not buyer");
+  console.log("Order Data : ", orderAdd._id);
+
+  if(orderAdd) {
+    res.status(200).json({orderId : orderAdd._id});
   }
 });
 
