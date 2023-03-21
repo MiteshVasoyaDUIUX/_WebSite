@@ -33,6 +33,7 @@ const protectLoginRegister = asyncHandler(async (req, res, next) => {
 const protectView = asyncHandler(async (req, res, next) => {
   let token;
 
+  // console.log("request headers : ", req.headers)
   //   console.log("Params : ", req.query.token);
   if (
     req.headers.authorization &&
@@ -57,14 +58,14 @@ const protectView = asyncHandler(async (req, res, next) => {
 
   if (!token) {
     res.status(401);
-    throw new Error("Not authorized, no token");
+    throw new Error("No Token, Not Authorized");
   }
 });
 
 const protectBuyer = asyncHandler(async (req, res, next) => {
   let token;
 
-  console.log("Params : ",req.headers.authorization);
+  // console.log("Params : ",req.headers.authorization);
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")

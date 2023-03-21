@@ -18,9 +18,9 @@ router.get("/", async (req, res) => {
 router.get("/product/:id", async (req, res) => {
 
   const productId = req.params;
-  console.log(productId);
+  // console.log(productId);
   const product = await productSchema.findById(productId.id);
-  console.log("Found One Product  : ", product);
+  // console.log("Found One Product  : ", product);
   
   res.json(product);
   // if (products) {
