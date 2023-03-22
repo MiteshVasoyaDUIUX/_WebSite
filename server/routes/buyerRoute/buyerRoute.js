@@ -39,41 +39,65 @@ router.put("/addtocart/:id", protectBuyer, async (req, res) => {
 
   const response = await userSchema.findById(id).select("cart");
 
-  console.log("Cart Response : ", response.cart);
+  const dataCart = response.cart;
+  const indexOfProd = dataCart.findIndex((e) => e.productId === productId);
 
-  if (response.cart.length === 0) {
-    let cart = [];
-    cart.push(productId);
-    console.log("Cart : ", cart);
+  console.log("Cart Response : ", dataCart);
+
+  if (indexOfProd === -1) {
+    const ppp = {
+      productId,
+      quantity: 1,
+    };
+
+    dataCart.push(ppp);
+
+    console.log("Cart : ", dataCart);
 
     const addedToCart = await userSchema.findByIdAndUpdate(id, {
-      cart,
+      cart : dataCart,
     });
 
     const newCart = await userSchema.findById(id).select("cart");
 
-    // console.log("Added To Cart : ", newCart.cart);
+    // // console.log("Added To Cart : ", newCart.cart);
     res.json(newCart.cart);
   } else {
-    const inCart = response.cart;
-    const isAddedtoCart = inCart.includes(productId);
-
-    if (!isAddedtoCart) {
-      inCart.push(productId);
-      const addedToCart = await userSchema.findByIdAndUpdate(id, {
-        cart: inCart,
-      });
-      const newCart = await userSchema.findById(id).select("cart");
-
-      // console.log("Added To Cart : ", newCart.cart);
-      res.json(newCart.cart);
+    const newQuantity = dataCart[indexOfProd].quantity + 1;
+    if (newQuantity > 10) {
+      res.status(400).json({ message: "Can not add quantity more than 10 " });
     } else {
+      dataCart[indexOfProd] = {
+        productId,
+        quantity: newQuantity,
+      };
+      console.log("indexOfProd : ", dataCart[indexOfProd]);
+
+      const addedToCart = await userSchema.findByIdAndUpdate(id, {
+        cart: dataCart,
+      });
+
       const newCart = await userSchema.findById(id).select("cart");
 
-      // console.log("Added To Cart : ", newCart.cart);
       res.json(newCart.cart);
     }
   }
+});
+
+router.put("/updatecart/:id", protectBuyer, async (req, res) => {
+  const productId = req.body.productId;
+  const id = req.params.id;
+  // const token = req.token;
+
+  console.log("PRODUCT ID", productId);
+
+  const response = await userSchema.findById(id).select("cart");
+
+  const dataCart = response.cart;
+  const indexOfProd = dataCart.findIndex((e) => e.productId === productId);
+
+  console.log("Cart Response : ", dataCart);
+
 });
 
 router.put("/addtowishlist/:id", protectBuyer, async (req, res) => {
@@ -153,16 +177,32 @@ router.get("/fetchcart/:id", protectBuyer, async (req, res) => {
   let cartProducts = [];
 
   // console.log("Users Wishlist : ", cart.cart);
-  console.log("Cart Length : ", cartLength);
+  console.log("Cart : ", cart.cart[0].quantity);
 
   for (let i = 0; i < cartLength; i++) {
-    const product = await productSchema.findById(cart.cart[i]);
-    cartProducts.push(product);
+    const product = await productSchema.findById(cart.cart[i].productId);
+    let newProduct = {
+      _id : product._id,
+      prodName : product.prodName,
+      prodDesc : product.prodDesc,
+      prodCategory : product.prodCategory,
+      prodQuantity : product.prodQuantity,
+      prodPrice : product.prodPrice,
+      discount : product.discount,
+      rating : product.rating,
+      deliveryType : product.deliveryType,
+      prodImage : product.prodImage,
+      date : product.date,
+      quantity : cart.cart[i].quantity
+    }
+    cartProducts.push(newProduct);
+    // console.log("PRODUCTS : ", newProduct)
   }
-  console.log("Cart Product : ", cartProducts);
+  // console.log("Cart Product : ", cart.cart);
 
   res.json(cartProducts);
 });
+
 
 //Get all orders placed by the user...
 router.get("/fetchallorders/:id", protectView, async (req, res) => {
