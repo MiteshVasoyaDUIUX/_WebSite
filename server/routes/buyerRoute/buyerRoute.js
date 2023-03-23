@@ -99,14 +99,87 @@ router.put("/updatecart/:id", protectBuyer, async (req, res) => {
 
   dataCart[indexOfProd].quantity = newData.newQuantity;
   console.log("Cart Response : ", dataCart[indexOfProd].quantity);
-  
+
   const addedToCart = await userSchema.findByIdAndUpdate(id, {
     cart: dataCart,
   });
 
   const newCart = await userSchema.findById(id).select("cart");
 
-  res.json(newCart.cart);
+  const cartLength = newCart.cart.length;
+  let cartProducts = [];
+
+  for (let i = 0; i < cartLength; i++) {
+    const product = await productSchema.findById(newCart.cart[i].productId);
+    let newProduct = {
+      _id: product._id,
+      prodName: product.prodName,
+      prodDesc: product.prodDesc,
+      prodCategory: product.prodCategory,
+      prodQuantity: product.prodQuantity,
+      prodPrice: product.prodPrice,
+      discount: product.discount,
+      rating: product.rating,
+      deliveryType: product.deliveryType,
+      prodImage: product.prodImage,
+      date: product.date,
+      quantity: newCart.cart[i].quantity,
+    };
+    cartProducts.push(newProduct);
+    // console.log("PRODUCTS : ", newProduct)
+  }
+  console.log("Cart Product : ", cartProducts);
+
+  res.json(cartProducts);
+});
+
+router.delete("/removefromcart/:id", protectBuyer, async (req, res) => {
+  const userId = req.user.id;
+  const productId = req.params.id;
+
+  const response = await userSchema.findById(userId).select("cart");
+  const dataCart = response.cart;
+  const indexOfProd = dataCart.findIndex((e) => e.productId === productId);
+
+  const removedItem = dataCart[indexOfProd];
+
+  dataCart.splice(indexOfProd, 1);
+  console.log("Attempt to delete the product in 'cart': ", removedItem);
+
+  const removedFromCart = await userSchema.findByIdAndUpdate(userId, {
+    cart: dataCart,
+  });
+
+  const newCart = await userSchema.findById(userId).select("cart");
+
+  const cartLength = newCart.cart.length;
+  let cartProducts = [];
+
+  // console.log("Users Wishlist : ", cart.cart);
+  // console.log("Cart : ", cart.cart[0].quantity);
+
+  for (let i = 0; i < cartLength; i++) {
+    const product = await productSchema.findById(newCart.cart[i].productId);
+    let newProduct = {
+      _id: product._id,
+      prodName: product.prodName,
+      prodDesc: product.prodDesc,
+      prodCategory: product.prodCategory,
+      prodQuantity: product.prodQuantity,
+      prodPrice: product.prodPrice,
+      discount: product.discount,
+      rating: product.rating,
+      deliveryType: product.deliveryType,
+      prodImage: product.prodImage,
+      date: product.date,
+      quantity: newCart.cart[i].quantity,
+    };
+    cartProducts.push(newProduct);
+    // console.log("PRODUCTS : ", newProduct)
+  }
+  console.log("Cart Product : ", cartProducts);
+
+  res.json(cartProducts);
 });
 
 router.put("/addtowishlist/:id", protectBuyer, async (req, res) => {
@@ -166,10 +239,10 @@ router.get("/fetchwishlist/:id", protectBuyer, async (req, res) => {
   const id = req.params.id;
   // const token = req.token;
 
-  console.log("USER ID", id);
+  // console.log("USER ID", id);
 
   const wishlist = await userSchema.findById(id).select("wishlist");
-  console.log("Users Wishlist : ", wishlist.wishlist);
+  // console.log("Users Wishlist : ", wishlist.wishlist);
 
   res.json(wishlist.wishlist);
 });
@@ -186,7 +259,7 @@ router.get("/fetchcart/:id", protectBuyer, async (req, res) => {
   let cartProducts = [];
 
   // console.log("Users Wishlist : ", cart.cart);
-  console.log("Cart : ", cart.cart[0].quantity);
+  // console.log("Cart : ", cart.cart[0].quantity);
 
   for (let i = 0; i < cartLength; i++) {
     const product = await productSchema.findById(cart.cart[i].productId);
@@ -219,7 +292,7 @@ router.get("/fetchallorders/:id", protectView, async (req, res) => {
   // console.log("User id : ", userId)
 
   const orders = await orderSchema.find({ userId });
-  console.log("Orders : ", orders);
+  // console.log("Orders : ", orders);
 
   if (orders) {
     res.status(200).json(orders);
@@ -241,17 +314,10 @@ router.get("/fetchallorders/:id", protectView, async (req, res) => {
 //Call this when User select item and Pass ItemId in Params with URL...
 router.post("/placeorder", protectView, async (req, res) => {
   const userId = req.user.id;
-  const role = req.user.role;
   const checkoutData = req.body;
-  const productId = checkoutData.productId;
-  const quantity = checkoutData.quantity;
   const status = "pending";
-  const totalAmount = checkoutData.productPrice * checkoutData.quantity;
-  const paymentType = checkoutData.paymentOption;
-  const prodImage = checkoutData.prodImage;
-  const prodName = checkoutData.prodName;
-  const date = new Date();
 
+  const date = new Date();
   const orderDate =
     String(date.getDate()) +
     "/" +
@@ -259,25 +325,42 @@ router.post("/placeorder", protectView, async (req, res) => {
     "/" +
     String(date.getFullYear());
 
-  const orderData = new orderSchema({
-    userId,
-    productId,
-    prodImage,
-    prodName,
-    quantity,
-    status,
-    totalAmount,
-    paymentType,
-    orderDate,
-  });
+  for (let index = 0; index < checkoutData.length; index++) {
+    const totalAmount =
+      checkoutData[index].productPrice * checkoutData[index].quantity;
+    const orderData = new orderSchema({
+      userId: checkoutData[index].userId,
+      productId: checkoutData[index].productId,
+      prodImage: checkoutData[index].prodImage,
+      prodName: checkoutData[index].prodName,
+      quantity: checkoutData[index].quantity,
+      status,
+      totalAmount,
+      paymentType: checkoutData[index].paymentOption,
+      orderDate,
+    });
+    console.log("CHECK OUT DATA : ", orderData);
 
-  const orderAdd = await orderData.save();
+    const orderAdd = await orderData.save();
 
-  // console.log("Order Data : ", orderAdd._id);
+    if (orderAdd) {
+      const response = await userSchema.findById(userId).select("cart");
+      const dataCart = response.cart;
+      const indexOfProd = dataCart.findIndex(
+        (e) => e.productId === checkoutData[index].productId
+      );
 
-  if (orderAdd) {
-    res.status(200).json({ orderId: orderAdd._id });
+      const removedItem = dataCart[indexOfProd];
+
+      dataCart.splice(indexOfProd, 1);
+      console.log("Attempt to delete the product in 'cart': ", removedItem);
+
+      const removedFromCart = await userSchema.findByIdAndUpdate(userId, {
+        cart: dataCart,
+      });
+    }
   }
+  res.status(200).end();
 });
 
 module.exports = router;
