@@ -55,7 +55,7 @@ router.put("/addtocart/:id", protectBuyer, async (req, res) => {
     console.log("Cart : ", dataCart);
 
     const addedToCart = await userSchema.findByIdAndUpdate(id, {
-      cart : dataCart,
+      cart: dataCart,
     });
 
     const newCart = await userSchema.findById(id).select("cart");
@@ -71,6 +71,7 @@ router.put("/addtocart/:id", protectBuyer, async (req, res) => {
         productId,
         quantity: newQuantity,
       };
+
       console.log("indexOfProd : ", dataCart[indexOfProd]);
 
       const addedToCart = await userSchema.findByIdAndUpdate(id, {
@@ -87,17 +88,25 @@ router.put("/addtocart/:id", protectBuyer, async (req, res) => {
 router.put("/updatecart/:id", protectBuyer, async (req, res) => {
   const productId = req.body.productId;
   const id = req.params.id;
-  // const token = req.token;
+  const newData = req.body;
 
-  console.log("PRODUCT ID", productId);
+  console.log("PRODUCT ID", newData.newQuantity);
 
   const response = await userSchema.findById(id).select("cart");
 
   const dataCart = response.cart;
   const indexOfProd = dataCart.findIndex((e) => e.productId === productId);
 
-  console.log("Cart Response : ", dataCart);
+  dataCart[indexOfProd].quantity = newData.newQuantity;
+  console.log("Cart Response : ", dataCart[indexOfProd].quantity);
+  
+  const addedToCart = await userSchema.findByIdAndUpdate(id, {
+    cart: dataCart,
+  });
 
+  const newCart = await userSchema.findById(id).select("cart");
+
+  res.json(newCart.cart);
 });
 
 router.put("/addtowishlist/:id", protectBuyer, async (req, res) => {
@@ -182,19 +191,19 @@ router.get("/fetchcart/:id", protectBuyer, async (req, res) => {
   for (let i = 0; i < cartLength; i++) {
     const product = await productSchema.findById(cart.cart[i].productId);
     let newProduct = {
-      _id : product._id,
-      prodName : product.prodName,
-      prodDesc : product.prodDesc,
-      prodCategory : product.prodCategory,
-      prodQuantity : product.prodQuantity,
-      prodPrice : product.prodPrice,
-      discount : product.discount,
-      rating : product.rating,
-      deliveryType : product.deliveryType,
-      prodImage : product.prodImage,
-      date : product.date,
-      quantity : cart.cart[i].quantity
-    }
+      _id: product._id,
+      prodName: product.prodName,
+      prodDesc: product.prodDesc,
+      prodCategory: product.prodCategory,
+      prodQuantity: product.prodQuantity,
+      prodPrice: product.prodPrice,
+      discount: product.discount,
+      rating: product.rating,
+      deliveryType: product.deliveryType,
+      prodImage: product.prodImage,
+      date: product.date,
+      quantity: cart.cart[i].quantity,
+    };
     cartProducts.push(newProduct);
     // console.log("PRODUCTS : ", newProduct)
   }
@@ -202,7 +211,6 @@ router.get("/fetchcart/:id", protectBuyer, async (req, res) => {
 
   res.json(cartProducts);
 });
-
 
 //Get all orders placed by the user...
 router.get("/fetchallorders/:id", protectView, async (req, res) => {
