@@ -317,6 +317,8 @@ router.post("/placeorder", protectView, async (req, res) => {
   const checkoutData = req.body;
   const status = "pending";
 
+  console.log("In Place Order Part...", checkoutData.length);
+
   const date = new Date();
   const orderDate =
     String(date.getDate()) +
@@ -328,22 +330,26 @@ router.post("/placeorder", protectView, async (req, res) => {
   for (let index = 0; index < checkoutData.length; index++) {
     const totalAmount =
       checkoutData[index].productPrice * checkoutData[index].quantity;
+    const productId = checkoutData[index].productId;
+    const orderQuantity = checkoutData[index].quantity;
+
     const orderData = new orderSchema({
       userId: checkoutData[index].userId,
-      productId: checkoutData[index].productId,
+      productId,
       prodImage: checkoutData[index].prodImage,
       prodName: checkoutData[index].prodName,
-      quantity: checkoutData[index].quantity,
+      quantity: orderQuantity,
       status,
       totalAmount,
       paymentType: checkoutData[index].paymentOption,
       orderDate,
     });
-    console.log("CHECK OUT DATA : ", orderData);
+    // console.log("CHECK OUT DATA : ", orderData);
 
     const orderAdd = await orderData.save();
+    // console.log("Order Add : ", orderAdd);
 
-    if (orderAdd) {
+    if (orderAdd && checkoutData[index].buypage !== 1) {
       const response = await userSchema.findById(userId).select("cart");
       const dataCart = response.cart;
       const indexOfProd = dataCart.findIndex(
@@ -353,14 +359,28 @@ router.post("/placeorder", protectView, async (req, res) => {
       const removedItem = dataCart[indexOfProd];
 
       dataCart.splice(indexOfProd, 1);
-      console.log("Attempt to delete the product in 'cart': ", removedItem);
+      // console.log("Attempt to delete the product in 'cart': ", removedItem);
 
       const removedFromCart = await userSchema.findByIdAndUpdate(userId, {
         cart: dataCart,
       });
+
+      // console.log("Removed Item : ", removedFromCart);
+    }
+
+    if (orderAdd) {
+      const productData = await productSchema
+        .findById(productId)
+        .select("prodQuantity");
+      const newQuantity = productData.prodQuantity - orderQuantity;
+
+      const updatedProdData = await productSchema.findByIdAndUpdate(productId, {
+        prodQuantity : newQuantity
+      })
+      console.log("Total Quantity : ", productData.prodQuantity, "New Data : ", updatedProdData);
     }
   }
-  res.status(200).end();
+  res.status(200).json({ message: "Order Placed Successfully" });
 });
 
 module.exports = router;
