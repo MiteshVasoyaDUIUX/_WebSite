@@ -36,9 +36,11 @@ const orderSchema = new mongoose.Schema(
       type : String,
       required : true
     },
-    orderDate : {
-      type : String,
-      required : true
+  }, 
+  {
+    timestamps : {
+      createdAt : true,
+      updatedAt : false
     }
   }
 );

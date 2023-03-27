@@ -83,7 +83,9 @@ router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
   );
 
   const createDate = new Date(Date.now());
-  const date = createDate.toLocaleString('en-Uk', { timeZone: 'UTC' }).split(",")[0];
+  const date = createDate
+    .toLocaleString("en-Uk", { timeZone: "UTC" })
+    .split(",")[0];
 
   const newProduct = new productSchema({
     prodName,
@@ -111,6 +113,27 @@ router.get("/allusers", allUsers, async (req, res) => {
   } else {
     res.json(usersList);
   }
+});
+
+//Get all data...
+router.get("/allorders/monthwise", allUsers, async (req, res) => {
+  let ordersMonthwise = [];
+  let date = new Date();
+  let orders;
+  const year = date.getFullYear();
+  let nuoOfOrder;
+  for (let i = 1; i <= 12; i++) {
+    let isoDateLt = `${year}-${i}-31`;
+    let isoDateGt = `${year}-${i}-01`;
+    orders = await orderSchema.find({
+      createdAt: { $gte: isoDateGt, $lt: isoDateLt },
+    });
+    noOfOrder = Object.keys(orders).length;
+    ordersMonthwise.push({ month: i, orders: noOfOrder });
+  }
+  console.log("NO. of Orders : ", ordersMonthwise);
+
+  res.json(ordersMonthwise);
 });
 
 //Temporarily allUsers middleware is used...

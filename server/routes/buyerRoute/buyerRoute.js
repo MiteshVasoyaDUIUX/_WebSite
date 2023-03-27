@@ -342,7 +342,7 @@ router.post("/placeorder", protectView, async (req, res) => {
       status,
       totalAmount,
       paymentType: checkoutData[index].paymentOption,
-      orderDate,
+      // orderDate,
     });
     // console.log("CHECK OUT DATA : ", orderData);
 
