@@ -136,6 +136,12 @@ router.get("/allorders/monthwise", allUsers, async (req, res) => {
   res.json(ordersMonthwise);
 });
 
+router.get("/allorders", allUsers, async (req, res) => {
+  const allOrders = await orderSchema.find().populate("userId");
+  console.log("ALL Orders : ", allOrders);
+  res.json(allOrders);
+});
+
 //Temporarily allUsers middleware is used...
 router.post("/orderuserwise", allUsers, async (req, res) => {
   // const userId = req.body.userId.userId;
@@ -171,7 +177,6 @@ router.put("/product/:id", protectDeletionUpdation, async (req, res) => {
     req.params.id,
     updatedData
   );
-
   // console.log("Product Update : ", updatedProduct);
   // // console.log("req.user.role : ", req.user.role);
 
@@ -180,6 +185,32 @@ router.put("/product/:id", protectDeletionUpdation, async (req, res) => {
   } else {
     res.status(200).json(updatedProduct);
   }
+});
+
+router.post("/acceptorder", protectDeletionUpdation, async (req, res) => {
+  const orderId = req.body.orderId;
+
+  const updateData = await orderSchema.findByIdAndUpdate(orderId, {
+    status : "Success"
+  })
+  
+  const updatedData = await orderSchema.find();
+  console.log("ORDER DETAILS : ", updatedData);
+
+  res.json(updatedData);
+});
+
+router.post("/cancelorder", protectDeletionUpdation, async (req, res) => {
+  const orderId = req.body.orderId;
+
+  const updateData = await orderSchema.findByIdAndUpdate(orderId, {
+    status : "Cancel"
+  })
+  
+  const updatedData = await orderSchema.find();
+  console.log("ORDER DETAILS : ", orderId);
+
+  res.json(updatedData);
 });
 
 module.exports = router;
