@@ -14,7 +14,9 @@ const protectLoginRegister = asyncHandler(async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
       // console.log("In Auth Path : ", decoded.role, decoded.id);
 
-      req.user = await userSchema.findById(decoded.id).select("-password, -cart");
+      req.user = await userSchema
+        .findById(decoded.id)
+        .select("-password, -cart");
       req.token = token;
       // console.log("Token : ", req.token);
       next();
@@ -33,8 +35,7 @@ const protectLoginRegister = asyncHandler(async (req, res, next) => {
 const protectView = asyncHandler(async (req, res, next) => {
   let token;
 
-  // console.log("request headers : ", req.headers)
-  //   console.log("Params : ", req.query.token);
+  // console.log("request headers : ", req.headers.authorization);
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
@@ -54,10 +55,9 @@ const protectView = asyncHandler(async (req, res, next) => {
         error: error,
       });
     }
-  }
-
-  if (!token) {
+  } else if (!token) {
     res.status(401);
+    // console.log("In Not Token...");
     throw new Error("No Token, Not Authorized");
   }
 });
@@ -177,10 +177,37 @@ const allUsers = asyncHandler(async (req, res, next) => {
   }
 });
 
+const protectChat = asyncHandler(async (req, res, next) => {
+  let token;
+
+  console.log("request headers : ", req.headers.authorization);
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+
+      const decoded = jwt.verify(token, process.env.SECRET_KEY);
+      // console.log("In Auth Path : ", decoded);
+
+      req.user = await userSchema.findById(decoded.id).select("name email role");
+      // console.log("In Auth Path : ", req.user);
+      next();
+    } catch (error) {
+      res.json({
+        message: "Not Authorized Person",
+        error: error,
+      });
+    }
+  }
+});
+
 module.exports = {
   protectLoginRegister,
   protectView,
   protectDeletionUpdation,
   allUsers,
   protectBuyer,
+  protectChat
 };

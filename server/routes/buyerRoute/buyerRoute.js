@@ -5,12 +5,14 @@ const {
   protectView,
   protectDeletionUpdation,
   protectBuyer,
+  protectChat
 } = require("../../middleware/authMiddleware");
 const orderSchema = require("../../schema/orderSchema");
 // const buyerSchema = require("../schema/buyerSchema");
 const { route } = require("../authRoute/authRoutes");
 const productSchema = require("../../schema/productSchema");
 const userSchema = require("../../schema/userSchema");
+const chatSchema = require("../../schema/chatSchema");
 
 //Dashboard of User...
 router.get("/", protectLoginRegister, async (req, res) => {
@@ -342,12 +344,28 @@ router.post("/placeorder", protectView, async (req, res) => {
       status,
       totalAmount,
       paymentType: checkoutData[index].paymentOption,
-      // orderDate,
     });
     // console.log("CHECK OUT DATA : ", orderData);
 
     const orderAdd = await orderData.save();
     // console.log("Order Add : ", orderAdd);
+
+    if (orderAdd) {
+      const newMessage = `Congratulations, Your order is place ${orderAdd._id}`;
+
+      const date = new Date();
+
+      const newChat = new chatSchema({
+        buyerId: userId,
+        message: {
+          text: newMessage,
+          fromAdmin: true,
+          fromBuyer: false,
+          time: date,
+        },
+      });
+      const message = await newChat.save();
+    }
 
     if (orderAdd && checkoutData[index].buypage !== 1) {
       const response = await userSchema.findById(userId).select("cart");
@@ -375,12 +393,25 @@ router.post("/placeorder", protectView, async (req, res) => {
       const newQuantity = productData.prodQuantity - orderQuantity;
 
       const updatedProdData = await productSchema.findByIdAndUpdate(productId, {
-        prodQuantity : newQuantity
-      })
-      console.log("Total Quantity : ", productData.prodQuantity, "New Data : ", updatedProdData);
+        prodQuantity: newQuantity,
+      });
+      console.log(
+        "Total Quantity : ",
+        productData.prodQuantity,
+        "New Data : ",
+        updatedProdData
+      );
     }
   }
   res.status(200).json({ message: "Order Placed Successfully" });
+});
+
+router.get("/chat", protectChat, async (req, res) => {
+  const userId = req.user;
+  // console.log("USer Data : ", userId);
+
+  const chat = await chatSchema.find({buyerId : userId._id});
+  res.json(chat);
 });
 
 module.exports = router;
