@@ -5,7 +5,7 @@ const {
   protectView,
   protectDeletionUpdation,
   protectBuyer,
-  protectChat
+  protectChat,
 } = require("../../middleware/authMiddleware");
 const orderSchema = require("../../schema/orderSchema");
 // const buyerSchema = require("../schema/buyerSchema");
@@ -13,6 +13,9 @@ const { route } = require("../authRoute/authRoutes");
 const productSchema = require("../../schema/productSchema");
 const userSchema = require("../../schema/userSchema");
 const chatSchema = require("../../schema/chatSchema");
+const conversationIdSchema = require("../../schema/conversationIdSchema");
+
+const adminId = "aUS1ZeUBOHeZwYdiKlFV4wIPpvh2";
 
 //Dashboard of User...
 router.get("/", protectLoginRegister, async (req, res) => {
@@ -355,14 +358,19 @@ router.post("/placeorder", protectView, async (req, res) => {
 
       const date = new Date();
 
+      const conversationId = await conversationIdSchema.findOne({
+        users: { $all: [adminId, userId] },
+      });
+
+      if(!conversationId) {
+        console.log("No ID found....");
+      }
+
       const newChat = new chatSchema({
-        buyerId: userId,
-        message: {
-          text: newMessage,
-          fromAdmin: true,
-          fromBuyer: false,
-          time: date,
-        },
+        conversationId: conversationId,
+        senderId: adminId,
+        message: newMessage,
+        time: date,
       });
       const message = await newChat.save();
     }
@@ -410,7 +418,7 @@ router.get("/chat", protectChat, async (req, res) => {
   const userId = req.user;
   // console.log("USer Data : ", userId);
 
-  const chat = await chatSchema.find({buyerId : userId._id});
+  const chat = await chatSchema.find({ buyerId: userId._id });
   res.json(chat);
 });
 

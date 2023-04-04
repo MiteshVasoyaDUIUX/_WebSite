@@ -1,39 +1,77 @@
+// const socketIdSchema = require("../../");
+
 const io = require("socket.io")(8888, {
   cors: {
     origin: "http://localhost:3000",
   },
 });
 
-const addUser = (userId, socketId) => {
-  !users.some((user) => user.userId === userId) &&
-    users.push({ userId, socketId });
+let activeClient = {};
+let reverseActiveClient = {};
+let activeAdmin = {};
+let reverseActiveAdmin = {};
+
+const addActiveClient = (socketIdData) => {
+  activeClient[socketIdData.userId] = socketIdData.socketId;
+  reverseActiveClient[socketIdData.socketId] = socketIdData.userId;
+  console.log("addActiveClient : ", activeClient);
+  // console.log("activeAdmin : ", activeAdmin);
+  // console.log("reverseActiveAdmin : ", reverseActiveAdmin);
 };
 
-const removeUser = (socketId) => {
-  users = users.filter((user) => user.socketId !== socketId);
+const removeActiveClient = (socketId) => {
+  const userId = reverseActiveClient[socketId];
+  delete reverseActiveClient[socketId];
+  delete activeClient[userId];
+  activeClient[userId] = null;
+  console.log("New Active User Array : ", activeClient);
 };
 
-const getUser = (userId) => {
-  return users.find((user) => user.userId === userId);
+const addActiveAdmin = (socketIdData) => {
+  activeAdmin[socketIdData.userId] = socketIdData.socketId;
+  reverseActiveAdmin[socketIdData.socketId] = socketIdData.userId;
+  console.log("addActiveAdmin : ", activeAdmin);
 };
 
-let users = [];
+const removeActiveAdmin = (socketId) => {
+  const userId = reverseActiveAdmin[socketId];
+  delete reverseActiveAdmin[socketId];
+  delete activeAdmin[userId];
+  activeAdmin[userId] = null;
+  console.log("New Active Admin Array : ", activeAdmin);
+};
+
+const getUserSocketId = (userId) => {};
 
 io.on("connection", (socket) => {
   console.log("User is Connected. Socket Id : ", socket.id);
-  socket.on("addUser", (userId) => {
-    addUser(userId, socket.id);
+
+  socket.on("addActiveClient", (socketIdData) => {
+    addActiveClient(socketIdData);
+  });
+
+  socket.on("addActiveAdmin", (socketIdData) => {
+    addActiveAdmin(socketIdData);
   });
 
   socket.on("sendMessage", (data) => {
     console.log("Sent Message : ", data);
+
+    // const recipientSocketId = activeClient[data.recipientUserId];
+    socket.broadcast.emit("privatemessage", data);
   });
 
-  //   io.emit("order-placed", "Congratulations Your Order is placed...");
+  // socket.on("isAdminActive", () => {
+  //   if(activeAdmin[]){
+
+  //   } else if(!activeAdmin){}
+  // })
 
   socket.on("disconnect", () => {
-    console.log("a user disconnected!");
-    removeUser(socket.id);
-    io.emit("getUsers", users);
+    console.log("a user disconnected!", socket.id);
+
+    removeActiveClient(socket.id);
+    removeActiveAdmin(socket.id);
+    // io.emit("getUsers", users);
   });
 });

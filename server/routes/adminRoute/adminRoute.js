@@ -27,14 +27,14 @@ const upload = multer({ memoryStorage });
 
 //Admin Dashboard...
 router.get("/", protectLoginRegister, (req, res) => {
-  const adminId = req.user.id;
+  const user = req.user;
   const role = req.user.role;
   const token = req.token;
 
   if (role === "admin") {
-    console.log("Token In Auth Route : ", token);
+    // console.log("Token In Auth Route : ", token);
     res.json({
-      adminId,
+      user,
       role,
       token,
     });

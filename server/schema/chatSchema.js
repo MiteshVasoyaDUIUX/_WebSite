@@ -1,22 +1,24 @@
+const { ref } = require("firebase/storage");
 const mongoose = require("mongoose");
 
 const chatSchema = new mongoose.Schema(
   {
-    buyerId: {
-      type: mongoose.Schema.Types.String,
+    conversationId : {
+      type : mongoose.Schema.Types.ObjectId,
+      ref : "conversationSchema"
+    },
+    senderId: {
+      type: String,
       required: true,
       ref: "userSchema",
     },
     message: {
-      type : Object,
+      type : string,
+    },
+    time: {
+      type : string,
     },
   },
-  {
-    timestamps: {
-      createdAt: true,
-      updatedAt: false,
-    },
-  }
 );
 
 module.exports = mongoose.model("chat", chatSchema);
