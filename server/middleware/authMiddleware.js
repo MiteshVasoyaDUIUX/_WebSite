@@ -193,7 +193,7 @@ const protectChat = asyncHandler(async (req, res, next) => {
 
       req.user = await userSchema.findById(decoded.id).select("name email role");
       // console.log("In Auth Path : ", req.user);
-      next();
+      
     } catch (error) {
       res.json({
         message: "Not Authorized Person",
@@ -201,6 +201,7 @@ const protectChat = asyncHandler(async (req, res, next) => {
       });
     }
   }
+  next();
 });
 
 module.exports = {

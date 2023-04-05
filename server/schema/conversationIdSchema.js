@@ -8,4 +8,4 @@ const conversationSchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("socketID", conversationSchema);
+module.exports = mongoose.model("conversationEntries", conversationSchema);

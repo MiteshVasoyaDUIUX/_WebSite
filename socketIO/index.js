@@ -1,5 +1,7 @@
 // const socketIdSchema = require("../../");
 
+const { find } = require("../server/schema/chatSchema");
+
 const io = require("socket.io")(8888, {
   cors: {
     origin: "http://localhost:3000",
@@ -41,6 +43,10 @@ const removeActiveAdmin = (socketId) => {
   console.log("New Active Admin Array : ", activeAdmin);
 };
 
+const findSocketId = (receiverId) => {
+  return activeAdmin[receiverId] || activeClient[receiverId];
+}
+
 const getUserSocketId = (userId) => {};
 
 io.on("connection", (socket) => {
@@ -54,11 +60,14 @@ io.on("connection", (socket) => {
     addActiveAdmin(socketIdData);
   });
 
-  socket.on("sendMessage", (data) => {
-    console.log("Sent Message : ", data);
+  socket.on("sendMessage", async (data) => {
+    console.log("Sent Message : ", data.receiverId);
 
+    const receiverSocketId = await findSocketId(data.receiverId); 
+
+    console.log("Receiver Socket Id : ", receiverSocketId)
     // const recipientSocketId = activeClient[data.recipientUserId];
-    socket.broadcast.emit("privatemessage", data);
+    io.to(receiverSocketId).emit("privatemessage", data);
   });
 
   // socket.on("isAdminActive", () => {

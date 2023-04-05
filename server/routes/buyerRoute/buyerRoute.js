@@ -354,21 +354,36 @@ router.post("/placeorder", protectView, async (req, res) => {
     // console.log("Order Add : ", orderAdd);
 
     if (orderAdd) {
-      const newMessage = `Congratulations, Your order is place ${orderAdd._id}`;
+      const newMessage = `Congratulations, Your order is placed. Order ID : ${orderAdd._id}`;
 
       const date = new Date();
 
-      const conversationId = await conversationIdSchema.findOne({
-        users: { $all: [adminId, userId] },
-      });
+      let conversationId = "";
 
-      if(!conversationId) {
-        console.log("No ID found....");
+      conversationId = await conversationIdSchema.findOne({
+        users: { $all: [adminId, userId] },
+      }).select("_id");
+
+      if(conversationId) {
+        console.log("Conversation Schema : ", String(conversationId._id));
+      }       else {
+        let newUsers = [adminId, userId]
+
+        const newConversationData = new conversationIdSchema({
+          users : newUsers
+        })
+
+        const conversationEntry = await newConversationData.save();
+        conversationId = await conversationIdSchema.findOne({
+          users: { $all: [adminId, userId] },
+        }).select("_id");
+        console.log("Conversaiton Schema : ", conversationId._id);
       }
 
       const newChat = new chatSchema({
-        conversationId: conversationId,
+        conversationId: conversationId._id,
         senderId: adminId,
+        receiverId : userId,
         message: newMessage,
         time: date,
       });
@@ -414,12 +429,6 @@ router.post("/placeorder", protectView, async (req, res) => {
   res.status(200).json({ message: "Order Placed Successfully" });
 });
 
-router.get("/chat", protectChat, async (req, res) => {
-  const userId = req.user;
-  // console.log("USer Data : ", userId);
 
-  const chat = await chatSchema.find({ buyerId: userId._id });
-  res.json(chat);
-});
 
 module.exports = router;
