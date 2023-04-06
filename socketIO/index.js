@@ -45,7 +45,7 @@ const removeActiveAdmin = (socketId) => {
 
 const findSocketId = (receiverId) => {
   return activeAdmin[receiverId] || activeClient[receiverId];
-}
+};
 
 const getUserSocketId = (userId) => {};
 
@@ -63,18 +63,16 @@ io.on("connection", (socket) => {
   socket.on("sendMessage", async (data) => {
     console.log("Sent Message : ", data.receiverId);
 
-    const receiverSocketId = await findSocketId(data.receiverId); 
+    const receiverSocketId = await findSocketId(data.receiverId);
 
-    console.log("Receiver Socket Id : ", receiverSocketId)
-    // const recipientSocketId = activeClient[data.recipientUserId];
-    io.to(receiverSocketId).emit("privatemessage", data);
+    if (!receiverSocketId) {
+      socket.emit('save-chat', data)
+    } else {
+      console.log("Receiver is online, Socket Id : ", receiverSocketId)
+      socket.emit('save-chat', data)
+      io.to(receiverSocketId).emit("privatemessage", data);
+    }
   });
-
-  // socket.on("isAdminActive", () => {
-  //   if(activeAdmin[]){
-
-  //   } else if(!activeAdmin){}
-  // })
 
   socket.on("disconnect", () => {
     console.log("a user disconnected!", socket.id);

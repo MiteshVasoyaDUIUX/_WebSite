@@ -67,9 +67,19 @@ router.get("/fetch/conversations", protectChat, async (req, res) => {
   res.json(allChats);
 });
 
-router.post("/save/chat", protectChat, (req, res) => {
+router.post("/save/chat", protectChat, async (req, res) => {
   const data = req.body;
-  // console.log("Chat Data : ", data)
+  const date = new Date();
+
+  const newChat = new chatSchema({
+    conversationId: data.conversationId,
+    senderId: data.senderId,
+    message: data.message,
+    time: date,
+  });
+  const message = await newChat.save();
+
+  console.log("Chat Data : ", message);
 });
 
 module.exports = router;

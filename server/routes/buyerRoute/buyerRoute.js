@@ -383,7 +383,6 @@ router.post("/placeorder", protectView, async (req, res) => {
       const newChat = new chatSchema({
         conversationId: conversationId._id,
         senderId: adminId,
-        receiverId : userId,
         message: newMessage,
         time: date,
       });
