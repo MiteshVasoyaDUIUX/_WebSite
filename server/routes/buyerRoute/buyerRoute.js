@@ -353,42 +353,6 @@ router.post("/placeorder", protectView, async (req, res) => {
     const orderAdd = await orderData.save();
     // console.log("Order Add : ", orderAdd);
 
-    if (orderAdd) {
-      const newMessage = `Congratulations, Your order is placed. Order ID : ${orderAdd._id}`;
-
-      const date = new Date();
-
-      let conversationId = "";
-
-      conversationId = await conversationIdSchema.findOne({
-        users: { $all: [adminId, userId] },
-      }).select("_id");
-
-      if(conversationId) {
-        console.log("Conversation Schema : ", String(conversationId._id));
-      }       else {
-        let newUsers = [adminId, userId]
-
-        const newConversationData = new conversationIdSchema({
-          users : newUsers
-        })
-
-        const conversationEntry = await newConversationData.save();
-        conversationId = await conversationIdSchema.findOne({
-          users: { $all: [adminId, userId] },
-        }).select("_id");
-        console.log("Conversaiton Schema : ", conversationId._id);
-      }
-
-      const newChat = new chatSchema({
-        conversationId: conversationId._id,
-        senderId: adminId,
-        message: newMessage,
-        time: date,
-      });
-      const message = await newChat.save();
-    }
-
     if (orderAdd && checkoutData[index].buypage !== 1) {
       const response = await userSchema.findById(userId).select("cart");
       const dataCart = response.cart;

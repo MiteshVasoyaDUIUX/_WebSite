@@ -20,6 +20,8 @@ const {
   deleteObject,
 } = require("firebase/storage");
 const orderSchema = require("../../schema/orderSchema");
+const conversationIdSchema = require("../../schema/conversationIdSchema");
+const chatSchema = require("../../schema/chatSchema");
 
 const storage = getStorage();
 const memoryStorage = multer.memoryStorage();
@@ -177,8 +179,6 @@ router.put("/product/:id", protectDeletionUpdation, async (req, res) => {
     req.params.id,
     updatedData
   );
-  // console.log("Product Update : ", updatedProduct);
-  // // console.log("req.user.role : ", req.user.role);
 
   if (!updatedProduct) {
     console.log("No items found");
@@ -189,13 +189,54 @@ router.put("/product/:id", protectDeletionUpdation, async (req, res) => {
 
 router.post("/acceptorder", protectDeletionUpdation, async (req, res) => {
   const orderId = req.body.orderId;
+  const adminId = req.user.id;
 
   const updateData = await orderSchema.findByIdAndUpdate(orderId, {
-    status : "Success"
-  })
-  
+    status: "Success",
+  });
+
   const updatedData = await orderSchema.find();
-  console.log("ORDER DETAILS : ", updatedData);
+  console.log("ORDER DETAILS : ", adminId);
+
+  if (updateData) {
+    const newMessage = `Congratulations, Your order is placed successfully. Order ID : ${updateData._id}`;
+    const userId = updateData.userId;
+    const date = new Date();
+
+    let conversationId = "";
+
+    conversationId = await conversationIdSchema
+      .findOne({
+        users: { $all: [adminId, userId] },
+      })
+      .select("_id");
+
+    if (conversationId) {
+      console.log("Conversation Schema : ", String(conversationId._id));
+    } else {
+      let newUsers = [adminId, userId];
+
+      const newConversationData = new conversationIdSchema({
+        users: newUsers,
+      });
+
+      const conversationEntry = await newConversationData.save();
+      conversationId = await conversationIdSchema
+        .findOne({
+          users: { $all: [adminId, userId] },
+        })
+        .select("_id");
+      console.log("Conversaiton Schema : ", conversationId._id);
+    }
+
+    const newChat = new chatSchema({
+      conversationId: conversationId._id,
+      senderId: adminId,
+      message: newMessage,
+      time: date,
+    });
+    const message = await newChat.save();
+  }
 
   res.json(updatedData);
 });
@@ -204,9 +245,9 @@ router.post("/cancelorder", protectDeletionUpdation, async (req, res) => {
   const orderId = req.body.orderId;
 
   const updateData = await orderSchema.findByIdAndUpdate(orderId, {
-    status : "Cancel"
-  })
-  
+    status: "Cancel",
+  });
+
   const updatedData = await orderSchema.find();
   console.log("ORDER DETAILS : ", orderId);
 
