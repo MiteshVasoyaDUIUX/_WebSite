@@ -18,14 +18,18 @@ const {
   uploadBytes,
   listAll,
   deleteObject,
+  updateMetadata,
 } = require("firebase/storage");
 const orderSchema = require("../../schema/orderSchema");
 const conversationIdSchema = require("../../schema/conversationIdSchema");
 const chatSchema = require("../../schema/chatSchema");
 
 const storage = getStorage();
-const memoryStorage = multer.memoryStorage();
-const upload = multer({ memoryStorage });
+
+const multStorage = multer.memoryStorage();
+const upload = multer({
+  dest : "downloads/"
+}).array("prodImage", 6);
 
 //Admin Dashboard...
 router.get("/", protectLoginRegister, (req, res) => {
@@ -52,19 +56,55 @@ router.get("/allproducts", protectDeletionUpdation, async (req, res) => {
   res.json(allProducts);
 });
 
-router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
-  // const image = req.body.prodImage;
-  // const imageStorageRef = ref(storage, "image-1");
+router.post("/addproducts", async (req, res) => {
+  const imageBytes = req.body;
+  let imgBytesArr = [];
+
+  upload(req, res, (err) => {
+    if (err) console.log("Error ", err);
+
+    console.log("Upload : ", req.files)
+  })
+
+  // const file = req.files;
+  // console.log("Image File : ", file);
+  // console.log("Product Data : ", req.headers["content-type"]);
+
+  const imageStorageRef = ref(storage, "image-6.jpeg");
 
   // const urlData = await fetch(image[0]);
   // const blob = await urlData.blob();
   // const objectUrl = URL.createObjectURL(image[0]);
 
+  const newMetadata = {
+    contentType: "image/jpeg",
+  };
+
+  // Update metadata properties
+  updateMetadata(imageStorageRef, newMetadata)
+    .then((metadata) => {
+      // Updated metadata for 'images/forest.jpg' is returned in the Promise
+    })
+    .catch((error) => {
+      // Uh-oh, an error occurred!
+    });
+
   // console.log(objectUrl);
-  // const uploadImage = uploadBytes(imageStorageRef, image[0]);
+
+  const bytes = new Uint8Array([
+    98, 108, 111, 98, 58, 104, 116, 116, 112, 58, 47, 47, 108, 111, 99, 97, 108,
+    104, 111, 115, 116, 58, 51, 48, 48, 48, 47, 54, 98, 55, 56, 99, 101, 50, 51,
+    45, 53, 97, 52, 56, 45, 52, 98, 54, 56, 45, 56, 102, 49, 55, 45, 48, 48, 51,
+    97, 55, 52, 53, 57, 99, 51, 52, 55,
+  ]);
+
+  // const uploadImage = uploadBytes(imageStorageRef, bytes);
 
   // console.log(base64);
   // console.log(typeof image[0]);
+
+  // var len = Buffer.byteLength(imageBytes[0]);
+  // console.log(len);
 
   const {
     prodName,
@@ -75,14 +115,14 @@ router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
     prodImage,
   } = req.body;
 
-  console.log(
-    prodName,
-    prodDesc,
-    prodCategory,
-    prodQuantity,
-    prodPrice,
-    prodImage
-  );
+  // console.log(
+  //   prodName,
+  //   prodDesc,
+  //   prodCategory,
+  //   prodQuantity,
+  //   prodPrice,
+  //   prodImage
+  // );
 
   const createDate = new Date(Date.now());
   const date = createDate
@@ -99,11 +139,11 @@ router.post("/addproducts", protectDeletionUpdation, async (req, res) => {
     date,
   });
 
-  const productAdd = await newProduct.save();
+  // const productAdd = await newProduct.save();
 
-  console.log("Product Add Response :  ", productAdd);
+  // console.log("Product Add Response :  ", productAdd);
 
-  res.json(productAdd);
+  // res.json(productAdd);
 });
 
 //Get list of all Users (including Vendors and Buyers)...
