@@ -56,63 +56,68 @@ router.get("/allproducts", protectDeletionUpdation, async (req, res) => {
   res.json(allProducts);
 });
 
-router.post("/addproducts", protectDeletionUpdation, upload, async (req, res) => {
-  const imageBytes = req.body;
-  let prodImageArray = [];
-  const newMetadata = {
-    contentType: "image/jpeg",
-  };
-  const { prodName, prodDesc, prodCategory, prodQuantity, prodPrice } =
-    req.body;
+router.post(
+  "/addproducts",
+  protectDeletionUpdation,
+  upload,
+  async (req, res) => {
+    const imageBytes = req.body;
+    let prodImageArray = [];
+    const newMetadata = {
+      contentType: "image/jpeg",
+    };
+    const { prodName, prodDesc, prodCategory, prodQuantity, prodPrice, prodMRP, paymentType } =
+      req.body;
 
-  const createDate = new Date(Date.now());
-  const date = createDate
-    .toLocaleString("en-Uk", { timeZone: "UTC" })
-    .split(",")[0];
+    const createDate = new Date(Date.now());
+    const date = createDate
+      .toLocaleString("en-Uk", { timeZone: "UTC" })
+      .split(",")[0];
 
-    
+    const files = req.files;
+    console.log("Files Length: ", files);
 
-  const files = req.files;
-  console.log("Files Length: ", files);
+    for (let index = 0; index < files.length; index++) {
+      const bytes = files[index].buffer;
+      const imgName = files[index].originalname.split(".")[0];
+      const imgExt = files[index].originalname.split(".")[1];
+      const imgUploadDate = date.replaceAll("/", "_");
 
-  for (let index = 0; index < files.length; index++) {
-    const bytes = files[index].buffer;
-    const imgName = files[index].originalname.split('.')[0]
-    const imgExt = files[index].originalname.split('.')[1]
-    const imgUploadDate = date.replaceAll("/", "_");
+      const imageStorageRef = ref(
+        storage,
+        `/product-images/${prodName}/${imgName}_${imgUploadDate}.${imgExt}`
+      );
 
-    const imageStorageRef = ref(
-      storage,
-      `/images/${imgName}_${imgUploadDate}.${imgExt}`
-    );
+      const uploadImage = await uploadBytes(imageStorageRef, bytes, newMetadata)
+        .then((snapshot) => {
+          return getDownloadURL(snapshot.ref);
+        })
+        .then((downloadURL) => {
+          prodImageArray.push(downloadURL);
+        });
+    }
 
-    const uploadImage = await uploadBytes(imageStorageRef, bytes, newMetadata)
-      .then((snapshot) => {
-        return getDownloadURL(snapshot.ref);
-      })
-      .then((downloadURL) => {
-        prodImageArray.push(downloadURL);
-      });
+    console.log("Prod Image Array : ", prodImageArray);
+
+    const newProduct = new productSchema({
+      prodName: prodName[0],
+      prodDesc: prodDesc[0],
+      prodCategory: prodCategory[0],
+      prodQuantity: prodQuantity[0],
+      prodPrice: prodPrice[0],
+      prodMRP: prodMRP[0],
+      paymentType: paymentType,
+      prodImage: prodImageArray,
+      date,
+    });
+
+    const productAdd = await newProduct.save();
+
+    console.log("Product Add Response :  ", newProduct);
+
+    res.json(productAdd);
   }
-
-  console.log("Prod Image Array : ", prodImageArray);
-
-  const newProduct = new productSchema({
-    prodName: prodName[0],
-    prodDesc: prodDesc[0],
-    prodCategory: prodCategory[0],
-    prodQuantity: prodQuantity[0],
-    prodPrice: prodPrice[0],
-    prodImage: prodImageArray,
-    date,
-  });
-
-  const productAdd = await newProduct.save();
-
-  console.log("Product Add Response :  ", newProduct);
-
-  res.json(productAdd);
-});
+);
 
 //Get list of all Users (including Vendors and Buyers)...
 router.get("/allusers", allUsers, async (req, res) => {
