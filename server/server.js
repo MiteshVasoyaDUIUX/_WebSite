@@ -38,4 +38,3 @@ app.use("/vendor", vendorRoute);
 app.use("/buyer", buyerRoute);
 app.use("/admin", adminRoute);
 app.use("/chat", chatRoute);
-

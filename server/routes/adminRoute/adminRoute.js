@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
 const {
   protectLoginRegister,
   protectView,
@@ -19,17 +18,18 @@ const {
   listAll,
   deleteObject,
   updateMetadata,
+  getDownloadURL,
 } = require("firebase/storage");
 const orderSchema = require("../../schema/orderSchema");
 const conversationIdSchema = require("../../schema/conversationIdSchema");
 const chatSchema = require("../../schema/chatSchema");
-
 const storage = getStorage();
 
-const multStorage = multer.memoryStorage();
-const upload = multer({
-  dest : "downloads/"
-}).array("prodImage", 6);
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() }).array(
+  "prodImage",
+  6
+);
 
 //Admin Dashboard...
 router.get("/", protectLoginRegister, (req, res) => {
@@ -56,94 +56,62 @@ router.get("/allproducts", protectDeletionUpdation, async (req, res) => {
   res.json(allProducts);
 });
 
-router.post("/addproducts", async (req, res) => {
+router.post("/addproducts", protectDeletionUpdation, upload, async (req, res) => {
   const imageBytes = req.body;
-  let imgBytesArr = [];
-
-  upload(req, res, (err) => {
-    if (err) console.log("Error ", err);
-
-    console.log("Upload : ", req.files)
-  })
-
-  // const file = req.files;
-  // console.log("Image File : ", file);
-  // console.log("Product Data : ", req.headers["content-type"]);
-
-  const imageStorageRef = ref(storage, "image-6.jpeg");
-
-  // const urlData = await fetch(image[0]);
-  // const blob = await urlData.blob();
-  // const objectUrl = URL.createObjectURL(image[0]);
-
+  let prodImageArray = [];
   const newMetadata = {
     contentType: "image/jpeg",
   };
-
-  // Update metadata properties
-  updateMetadata(imageStorageRef, newMetadata)
-    .then((metadata) => {
-      // Updated metadata for 'images/forest.jpg' is returned in the Promise
-    })
-    .catch((error) => {
-      // Uh-oh, an error occurred!
-    });
-
-  // console.log(objectUrl);
-
-  const bytes = new Uint8Array([
-    98, 108, 111, 98, 58, 104, 116, 116, 112, 58, 47, 47, 108, 111, 99, 97, 108,
-    104, 111, 115, 116, 58, 51, 48, 48, 48, 47, 54, 98, 55, 56, 99, 101, 50, 51,
-    45, 53, 97, 52, 56, 45, 52, 98, 54, 56, 45, 56, 102, 49, 55, 45, 48, 48, 51,
-    97, 55, 52, 53, 57, 99, 51, 52, 55,
-  ]);
-
-  // const uploadImage = uploadBytes(imageStorageRef, bytes);
-
-  // console.log(base64);
-  // console.log(typeof image[0]);
-
-  // var len = Buffer.byteLength(imageBytes[0]);
-  // console.log(len);
-
-  const {
-    prodName,
-    prodDesc,
-    prodCategory,
-    prodQuantity,
-    prodPrice,
-    prodImage,
-  } = req.body;
-
-  // console.log(
-  //   prodName,
-  //   prodDesc,
-  //   prodCategory,
-  //   prodQuantity,
-  //   prodPrice,
-  //   prodImage
-  // );
+  const { prodName, prodDesc, prodCategory, prodQuantity, prodPrice } =
+    req.body;
 
   const createDate = new Date(Date.now());
   const date = createDate
     .toLocaleString("en-Uk", { timeZone: "UTC" })
     .split(",")[0];
 
+    
+
+  const files = req.files;
+  console.log("Files Length: ", files);
+
+  for (let index = 0; index < files.length; index++) {
+    const bytes = files[index].buffer;
+    const imgName = files[index].originalname.split('.')[0]
+    const imgExt = files[index].originalname.split('.')[1]
+    const imgUploadDate = date.replaceAll("/", "_");
+
+    const imageStorageRef = ref(
+      storage,
+      `/images/${imgName}_${imgUploadDate}.${imgExt}`
+    );
+
+    const uploadImage = await uploadBytes(imageStorageRef, bytes, newMetadata)
+      .then((snapshot) => {
+        return getDownloadURL(snapshot.ref);
+      })
+      .then((downloadURL) => {
+        prodImageArray.push(downloadURL);
+      });
+  }
+
+  console.log("Prod Image Array : ", prodImageArray);
+
   const newProduct = new productSchema({
-    prodName,
-    prodDesc,
-    prodCategory,
-    prodQuantity,
-    prodPrice,
-    prodImage,
+    prodName: prodName[0],
+    prodDesc: prodDesc[0],
+    prodCategory: prodCategory[0],
+    prodQuantity: prodQuantity[0],
+    prodPrice: prodPrice[0],
+    prodImage: prodImageArray,
     date,
   });
 
-  // const productAdd = await newProduct.save();
+  const productAdd = await newProduct.save();
 
-  // console.log("Product Add Response :  ", productAdd);
+  console.log("Product Add Response :  ", newProduct);
 
-  // res.json(productAdd);
+  res.json(productAdd);
 });
 
 //Get list of all Users (including Vendors and Buyers)...
@@ -261,6 +229,7 @@ router.post("/acceptorder", protectDeletionUpdation, async (req, res) => {
       });
 
       const conversationEntry = await newConversationData.save();
+
       conversationId = await conversationIdSchema
         .findOne({
           users: { $all: [adminId, userId] },
