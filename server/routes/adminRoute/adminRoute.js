@@ -66,8 +66,15 @@ router.post(
     const newMetadata = {
       contentType: "image/jpeg",
     };
-    const { prodName, prodDesc, prodCategory, prodQuantity, prodPrice, prodMRP, paymentType } =
-      req.body;
+    const {
+      prodName,
+      prodDesc,
+      prodCategory,
+      prodQuantity,
+      prodPrice,
+      prodMRP,
+      paymentType,
+    } = req.body;
 
     const createDate = new Date(Date.now());
     const date = createDate

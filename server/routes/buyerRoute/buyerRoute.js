@@ -274,7 +274,7 @@ router.get("/fetchcart/:id", protectBuyer, async (req, res) => {
       prodDesc: product.prodDesc,
       prodCategory: product.prodCategory,
       prodQuantity: product.prodQuantity,
-      prodPrice: product.prodPrice,
+      prodPrice: product.prodPrice, 
       discount: product.discount,
       rating: product.rating,
       deliveryType: product.deliveryType,

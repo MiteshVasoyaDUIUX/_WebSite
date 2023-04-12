@@ -35,11 +35,6 @@ const productSchema = new mongoose.Schema({
     required: true,
     default: 0,
   },
-  paymentType: {
-    type: String,
-    required: true,
-    default: "COD",
-  },
   prodImage: {
     type: Array,
     required: false,
