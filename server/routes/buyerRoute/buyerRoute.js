@@ -14,8 +14,13 @@ const productSchema = require("../../schema/productSchema");
 const userSchema = require("../../schema/userSchema");
 const chatSchema = require("../../schema/chatSchema");
 const conversationIdSchema = require("../../schema/conversationIdSchema");
-
+const verify = require("../../firebase/config");
 const adminId = "aUS1ZeUBOHeZwYdiKlFV4wIPpvh2";
+
+const actionCodeSettings = {
+  url: "https://localhost:3000/",
+  handleCodeInApp: true,
+};
 
 //Dashboard of User...
 router.get("/", protectLoginRegister, async (req, res) => {
@@ -392,6 +397,19 @@ router.post("/placeorder", protectView, async (req, res) => {
   res.status(200).json({ message: "Order Placed Successfully" });
 });
 
+router.get("/verification", protectView, async (req, res) => {
+  const user = req.user;
+
+  console.log("User Email : ", user.email);
+
+  const userVerification = await verify.verifyUser(
+    user.email,
+    actionCodeSettings
+  );
+
+  // console.log("LLINK L :", userVerification)
+                         
+});
 
 
 module.exports = router;

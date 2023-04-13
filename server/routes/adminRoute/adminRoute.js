@@ -20,6 +20,9 @@ const {
   updateMetadata,
   getDownloadURL,
 } = require("firebase/storage");
+
+const verify = require("../../firebase/config");
+
 const orderSchema = require("../../schema/orderSchema");
 const conversationIdSchema = require("../../schema/conversationIdSchema");
 const chatSchema = require("../../schema/chatSchema");
@@ -82,7 +85,7 @@ router.post(
       .split(",")[0];
 
     const files = req.files;
-    console.log("Files Length: ", files);
+    // console.log("Files Length: ", files);
 
     for (let index = 0; index < files.length; index++) {
       const bytes = files[index].buffer;
@@ -104,7 +107,7 @@ router.post(
         });
     }
 
-    console.log("Prod Image Array : ", prodImageArray);
+    // console.log("Prod Image Array : ", prodImageArray);
 
     const newProduct = new productSchema({
       prodName: prodName[0],
@@ -120,7 +123,7 @@ router.post(
 
     const productAdd = await newProduct.save();
 
-    console.log("Product Add Response :  ", newProduct);
+    // console.log("Product Add Response :  ", newProduct);
 
     res.json(productAdd);
   }
@@ -129,6 +132,35 @@ router.post(
 //Get list of all Users (including Vendors and Buyers)...
 router.get("/allusers", allUsers, async (req, res) => {
   const usersList = await userSchema.find();
+
+  const allUsers = await verify.allUsersFromFirebase();
+
+  // console.log("All Users : ", allUsers.users[0].uid);
+  // console.log("All Users FROM DB : ", usersList);
+
+  for (let iindex = 0; iindex < usersList.length; iindex++) {
+    const dbUserData = usersList[iindex];
+
+    if (!dbUserData.emailVerified) {
+      // console.log("User not verified : ", dbUserData)
+
+      for (let jindex = 0; jindex < allUsers.users.length; jindex++) {
+        const fbUserData = allUsers.users[jindex];
+
+        if (dbUserData._id === fbUserData.uid) {
+          // console.log("Not Verified", dbUserData._id, dbUserData.emailVerified);
+          const emailVerifiedUpdate = await userSchema.findByIdAndUpdate(
+            dbUserData._id,
+            { emailVerified: fbUserData.emailVerified }
+          );
+
+          console.log("Update : ", emailVerifiedUpdate)
+          // dbUserData.emailVerified = fbUserData.emailVerified;
+        }
+      }
+    }
+    // console.log("User Id : ", user._id)
+  }
   // console.log("usersList : ", usersList.length);
   if (usersList.length == 0) {
     console.log("Users Not found");
@@ -143,7 +175,7 @@ router.get("/allorders/monthwise", allUsers, async (req, res) => {
   let date = new Date();
   let orders;
   const year = date.getFullYear();
-  let nuoOfOrder;
+  let noOfOrder;
   for (let i = 1; i <= 12; i++) {
     let isoDateLt = `${year}-${i}-31`;
     let isoDateGt = `${year}-${i}-01`;
@@ -153,14 +185,14 @@ router.get("/allorders/monthwise", allUsers, async (req, res) => {
     noOfOrder = Object.keys(orders).length;
     ordersMonthwise.push({ month: i, orders: noOfOrder });
   }
-  console.log("NO. of Orders : ", ordersMonthwise);
+  // console.log("NO. of Orders : ", ordersMonthwise);
 
   res.json(ordersMonthwise);
 });
 
 router.get("/allorders", allUsers, async (req, res) => {
   const allOrders = await orderSchema.find().populate("userId");
-  console.log("ALL Orders : ", allOrders);
+  // console.log("ALL Orders : ", allOrders);
   res.json(allOrders);
 });
 
@@ -169,7 +201,7 @@ router.post("/orderuserwise", allUsers, async (req, res) => {
   // const userId = req.body.userId.userId;
   // console.log('req.body', userId);
   const ordersList = await orderSchema.find().select("-productId");
-  console.log("Order List By User Data : ", ordersList);
+  // console.log("Order List By User Data : ", ordersList);
   if (ordersList) {
     res.json(ordersList);
   } else {
@@ -181,7 +213,7 @@ router.delete("/product/:id", protectDeletionUpdation, async (req, res) => {
   const adminId = req.user.id;
   const role = req.user.role;
 
-  console.log("Attempt to delete the product with 'id': ", req.params.id);
+  // console.log("Attempt to delete the product with 'id': ", req.params.id);
   const product = await productSchema.findByIdAndDelete(req.params.id);
   // console.log("req.user.role : ", req.user.role);
 
@@ -216,7 +248,7 @@ router.post("/acceptorder", protectDeletionUpdation, async (req, res) => {
   });
 
   const updatedData = await orderSchema.find();
-  console.log("ORDER DETAILS : ", adminId);
+  // console.log("ORDER DETAILS : ", adminId);
 
   if (updateData) {
     const newMessage = `Congratulations, Your order is placed successfully. Order ID : ${updateData._id}`;
@@ -247,7 +279,7 @@ router.post("/acceptorder", protectDeletionUpdation, async (req, res) => {
           users: { $all: [adminId, userId] },
         })
         .select("_id");
-      console.log("Conversaiton Schema : ", conversationId._id);
+      // console.log("Conversaiton Schema : ", conversationId._id);
     }
 
     const newChat = new chatSchema({
@@ -270,7 +302,7 @@ router.post("/cancelorder", protectDeletionUpdation, async (req, res) => {
   });
 
   const updatedData = await orderSchema.find();
-  console.log("ORDER DETAILS : ", orderId);
+  // console.log("ORDER DETAILS : ", orderId);
 
   res.json(updatedData);
 });

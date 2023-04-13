@@ -7,13 +7,6 @@ const jwt = require("jsonwebtoken");
 const { protect } = require("../../middleware/authMiddleware");
 const buyerRoute = require("../buyerRoute/buyerRoute");
 const verify = require("../../firebase/config");
-const {
-  getAuth,
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-} = require("firebase/auth");
-
-const auth = getAuth();
 
 const actionCodeSettings = {
   url: "https://localhost:3000/",
@@ -60,7 +53,7 @@ router.post("/register", async (req, res) => {
   if (findUser) {
     res.status(401).end();
   } else {
-    try {
+    try { 
       const userAdd = await verify.addUser(email, password);
       const userVerification = await verify.verifyUser(
         email,
@@ -95,6 +88,7 @@ router.post("/register", async (req, res) => {
 
       if (uSchema.role === "buyer") {
         console.log(`/buyer`);
+        res.redirect(`/buyer?token=${token}`);
         
       } else if (uSchema.role === "admin") {
         res.redirect(`/admin?token=${token}`);
