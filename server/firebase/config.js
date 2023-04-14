@@ -20,13 +20,12 @@ const serviceAccount = require("../../shoppingsite-e25c4-firebase-adminsdk-6npj3
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIRE_AUTH_DOMAIN,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
   projectId: process.env.FIREBASE_PROJECT_ID,
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.FIREBASE_APP_ID,
   measurementId: process.env.MEASUREMENT_ID,
-  credential: admin.credential.cert(serviceAccount),
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -37,20 +36,42 @@ admin.initializeApp({
 
 const auth = getAuth();
 
+let userAuth;
+
 //Create User...
-exports.addUser = (email, password) =>
-  createUserWithEmailAndPassword(auth, email, password);
+exports.addUser = (email, password) => {
+  const userCreatedd = createUserWithEmailAndPassword(auth, email, password);
+  userAuth = auth.currentUser;
+
+  return userCreatedd;
+};
 
 // Verify User with Link Sent to Email...
-exports.verifyUser = (actionCodeSettings) =>
-  sendEmailVerification(auth.currentUser, {
-    url: "http://localhost:3000/",
-    handleCodeInApp: true,
-  }).catch((e) => console.log("Error : ", e));
+
+exports.verifyUser = (actionCodeSettings) => {
+
+  // console.log("verifyUser : ", userAuth, auth.currentUser);
+  const verification = sendEmailVerification(auth.currentUser, actionCodeSettings).catch((e) => {
+    console.log("Error : ", e);
+    console.log("Firebase Config : ", firebaseConfig);
+  });
+};
+
+exports.curUser = () => {
+  return auth.currentUser;
+}
 
 //SignIn User...
-exports.signInUser = (email, password) =>
-  signInWithEmailAndPassword(auth, email, password);
+exports.signInUser = async (email, password) => {
+  const signIn = await signInWithEmailAndPassword(auth, email, password);
+  userAuth = auth.currentUser;
+  console.log("SIGN IN VAR :", userAuth, auth.currentUser)
+  return signIn;
+};
+exports.signOutUser = () =>
+  signOut(auth).catch((Error) => {
+    console.log("Error While Signing Out : ", Error);
+  });
 
 exports.allUsersFromFirebase = async (nextPageToken) => {
   const allUsers = await admin
