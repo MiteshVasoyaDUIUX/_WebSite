@@ -404,18 +404,4 @@ const actionCodeSettings = {
   });
 }
 
-// router.get("/verification", protectView, async (req, res) => {
-//   // const user = req.user;
-
-//   // console.log("User Email : ", user.email);
-
-//   // console.log("Verification : ", auth.currentUser)
-
-//   const userVerification = await verify.verifyUser(
-//     actionCodeSettings
-//   );
-
-//   // console.log("LLINK L :", userVerification)
-// });
-
 module.exports = router;

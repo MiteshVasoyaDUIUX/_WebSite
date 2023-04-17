@@ -30,6 +30,14 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
+  isBlocked: {
+    type: Boolean,
+    default: false,
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
   cart: {
     type: mongoose.Schema.Types.Array,
     required: false,

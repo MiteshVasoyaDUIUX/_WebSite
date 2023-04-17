@@ -20,15 +20,7 @@ router.get("/fetch", protectChat, async (req, res) => {
 
   const chat = await chatSchema.find({
     conversationId: conversationData[0]._id,
-  });
-
-  // users?.map((id) => {
-  //   if (user.user._id === id) {
-  //     senderId = id;
-  //   } else if (user.user._id !== id) {
-  //     receiverId = id;
-  //   }
-  // });
+  }).limit(5);
 
   const chatRes = {
     conversationId: conversationData[0]._id,

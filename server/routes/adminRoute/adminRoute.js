@@ -154,7 +154,7 @@ router.get("/allusers", allUsers, async (req, res) => {
             { emailVerified: fbUserData.emailVerified }
           );
 
-          console.log("Update : ", emailVerifiedUpdate)
+          // console.log("Update : ", emailVerifiedUpdate)
           // dbUserData.emailVerified = fbUserData.emailVerified;
         }
       }
@@ -305,6 +305,44 @@ router.post("/cancelorder", protectDeletionUpdation, async (req, res) => {
   // console.log("ORDER DETAILS : ", orderId);
 
   res.json(updatedData);
+});
+
+router.post("/deleteuser", protectDeletionUpdation, async (req, res) => {
+  const userId = req.body.userId;
+
+  console.log("User Id : ", userId);
+
+  const deleteUser = await userSchema.findByIdAndUpdate(userId, {
+    isDeleted: true,
+  });
+
+  const updatedUser = await userSchema.findById(userId);
+
+  const updateData = {
+    userId,
+    isDeleted: updatedUser.isDeleted,
+  };
+
+  res.json(updateData);
+});
+
+router.post("/blockunblockuser", protectDeletionUpdation, async (req, res) => {
+  const userId = req.body.userId;
+  const blockedUnblock = req.body.blocked;
+
+  // console.log("User Id : ", userId, "Block-UnBlock : ", blockedUnblock);
+
+  const blockUser = await userSchema.findByIdAndUpdate(userId, {
+    isBlocked: blockedUnblock,
+  });
+
+  const updatedUser = await userSchema.findById(userId);
+
+  const updateData = {
+    userId,
+    isBlocked: updatedUser.isBlocked,
+  };
+  res.json(updateData);
 });
 
 module.exports = router;
