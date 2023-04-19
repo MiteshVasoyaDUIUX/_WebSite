@@ -179,8 +179,9 @@ const allUsers = asyncHandler(async (req, res, next) => {
 
 const protectChat = asyncHandler(async (req, res, next) => {
   let token;
-
+  
   console.log("request headers : ", req.headers.authorization);
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
@@ -191,9 +192,10 @@ const protectChat = asyncHandler(async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
       // console.log("In Auth Path : ", decoded);
 
-      req.user = await userSchema.findById(decoded.id).select("name email role");
+      req.user = await userSchema
+        .findById(decoded.id)
+        .select("name email role");
       // console.log("In Auth Path : ", req.user);
-      
     } catch (error) {
       res.json({
         message: "Not Authorized Person",
@@ -210,5 +212,5 @@ module.exports = {
   protectDeletionUpdation,
   allUsers,
   protectBuyer,
-  protectChat
+  protectChat,
 };
