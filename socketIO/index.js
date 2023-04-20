@@ -61,7 +61,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendMessage", async (data) => {
-    console.log("Sent Message : ", data.receiverId);
+    console.log("Sent Message : ", data);
 
     const receiverSocketId = await findSocketId(data.receiverId);
 

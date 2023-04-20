@@ -77,31 +77,18 @@ router.get("/user/verification", protectView, async (req, res) => {
 
       console.log("Updated data : ", updateData);
 
-      res.json({ isVerified: true, user : updateData });
+      res.json({ isVerified: true, user: updateData });
     }
   }, 3000);
 
   // console.log("LLINK L :", userVerification)
 });
 
-router.post("/logout", async (req, res) => {
-  const { email, password } = req.body;
-  // const user = await userSchema.findOne({ email });
-
-  try {
-    const userSignOut = await verify.signOutUser(email, password);
-    res.json({
-      message: "Signed Out",
-    });
-    // console.log("SO : ")
-  } catch (Error) {
-    console.log("Error :", Error);
-  }
-});
-
 //User Registration...
 router.post("/register", async (req, res) => {
   const { name, email, password, phoneNumber, role, address } = req.body;
+  let addressArr = [];
+  addressArr.push(address);
   // console.log("Data Entered By User : ", name, email, password, role);
   const findUser = await userSchema.findOne({ email });
   if (findUser) {
@@ -121,7 +108,7 @@ router.post("/register", async (req, res) => {
         phoneNumber: phoneNumber,
         role: role,
         emailVerified: userAdd.user.emailVerified,
-        address,
+        address: addressArr,
       });
 
       const addUserToMDB = await uSchema.save();
@@ -149,6 +136,21 @@ router.post("/register", async (req, res) => {
     } catch (error) {
       console.log(error);
     }
+  }
+});
+
+router.post("/logout", async (req, res) => {
+  const { email, password } = req.body;
+  // const user = await userSchema.findOne({ email });
+
+  try {
+    const userSignOut = await verify.signOutUser(email, password);
+    res.json({
+      message: "Signed Out",
+    });
+    // console.log("SO : ")
+  } catch (Error) {
+    console.log("Error :", Error);
   }
 });
 

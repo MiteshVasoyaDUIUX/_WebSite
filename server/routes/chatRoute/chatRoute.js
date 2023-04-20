@@ -15,38 +15,20 @@ const getUserName = async (userId) => {
   return clientData.name;
 };
 
-router.get("/fetch", protectChat, async (req, res) => {
+router.get("/client/fetch/:from", protectChat, async (req, res) => {
   const userData = req.user;
   const userId = userData._id;
-  // console.log("USer Data : ", userId);
-
-  const conversationData = await conversationIdSchema.find({
-    users: { $all: [adminId, userId] },
-  });
-
-  const chat = await chatSchema
-    .find({
-      conversationId: conversationData[0]._id,
-    })
-    .limit(5);
-
-  const chatRes = {
-    conversationId: conversationData[0]._id,
-    messageData: chat,
-    users: conversationData[0].users,
-  };
-  // console.log("Conversartion Found :", chatRes);
-  res.json(chatRes);
-});
-
-router.get("/admin/fetch/:id/:from", protectChat, async (req, res) => {
-  const conversationId = req.params.id;
   const from = req.params.from;
   const to = 15;
   let moreMsg;
   const skipData = from - 1;
 
-  const conversationData = await conversationIdSchema.findById(conversationId);
+  const conversationData = await conversationIdSchema.find({
+    users: { $all: [adminId, userId] },
+  });
+
+  const conversationId = conversationData[0]._id;
+
   const totalMsg = await chatSchema.find({ conversationId });
   const reversedMsg = await chatSchema
     .find({ conversationId })
@@ -54,8 +36,7 @@ router.get("/admin/fetch/:id/:from", protectChat, async (req, res) => {
     .limit(to)
     .sort({ _id: -1 });
 
-  //Reverse the result...
-  const msg = [...reversedMsg].reverse;
+  console.log("Chat Data : ", reversedMsg);
 
   if (Number(to) + Number(from) - 1 < totalMsg.length) {
     moreMsg = true;
@@ -63,12 +44,10 @@ router.get("/admin/fetch/:id/:from", protectChat, async (req, res) => {
     moreMsg = false;
   }
 
-  console.log("from : ", from);
-
   const newMessageObj = {
     conversationId: conversationId,
     messageData: reversedMsg,
-    users: conversationData.users,
+    users: conversationData[0].users,
     moreMsg,
     nextMsgFrom: Number(from) + Number(to),
   };
@@ -77,6 +56,50 @@ router.get("/admin/fetch/:id/:from", protectChat, async (req, res) => {
 
   res.json(newMessageObj);
 });
+
+router.get(
+  "/admin/fetch/:conversationId/:from",
+  protectChat,
+  async (req, res) => {
+    const conversationId = req.params.conversationId;
+    const from = req.params.from;
+    const to = 15;
+    let moreMsg;
+    const skipData = from - 1;
+
+    const conversationData = await conversationIdSchema.findById(
+      conversationId
+    );
+    const totalMsg = await chatSchema.find({ conversationId });
+    const reversedMsg = await chatSchema
+      .find({ conversationId })
+      .skip(skipData)
+      .limit(to)
+      .sort({ _id: -1 });
+
+    //Reverse the result...
+
+    if (Number(to) + Number(from) - 1 < totalMsg.length) {
+      moreMsg = true;
+    } else {
+      moreMsg = false;
+    }
+
+    console.log("from : ", from);
+
+    const newMessageObj = {
+      conversationId: conversationId,
+      messageData: reversedMsg,
+      users: conversationData.users,
+      moreMsg,
+      nextMsgFrom: Number(from) + Number(to),
+    };
+
+    // console.log("Conversation Data : ", newMessageObj.nextMsgFrom);
+
+    res.json(newMessageObj);
+  }
+);
 
 router.get("/fetch/conversations", protectChat, async (req, res) => {
   const userData = req.user;

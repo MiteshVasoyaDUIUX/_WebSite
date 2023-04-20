@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   address: {
-    type: Object,
+    type: Array,
     required: true,
   },
 
