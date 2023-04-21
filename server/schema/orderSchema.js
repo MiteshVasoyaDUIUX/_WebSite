@@ -12,13 +12,13 @@ const orderSchema = new mongoose.Schema(
       required: true,
       ref: "productSchema",
     },
-    prodName : {
-      type : String,
-      required : true
+    prodName: {
+      type: String,
+      required: true,
     },
-    prodImage : {
-      type : Array,
-      required : true
+    prodImage: {
+      type: Array,
+      required: true,
     },
     quantity: {
       type: Number,
@@ -32,16 +32,20 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    paymentType : {
-      type : String,
-      required : true
+    paymentType: {
+      type: String,
+      required: true,
     },
-  }, 
+    deliveryAddress: {
+      type: Object,
+      required: true,
+    },
+  },
   {
-    timestamps : {
-      createdAt : true,
-      updatedAt : false
-    }
+    timestamps: {
+      createdAt: true,
+      updatedAt: false,
+    },
   }
 );
 

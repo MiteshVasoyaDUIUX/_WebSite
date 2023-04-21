@@ -330,7 +330,7 @@ const actionCodeSettings = {
     const checkoutData = req.body;
     const status = "pending";
 
-    console.log("In Place Order Part...", checkoutData.length);
+    // console.log("In Place Order Part...", checkoutData.length);
 
     const date = new Date();
     const orderDate =
@@ -345,6 +345,8 @@ const actionCodeSettings = {
         checkoutData[index].productPrice * checkoutData[index].quantity;
       const productId = checkoutData[index].productId;
       const orderQuantity = checkoutData[index].quantity;
+      const deliveryAddress = checkoutData[index].deliveryAddress;
+      let addressFound = false;
 
       const orderData = new orderSchema({
         userId: checkoutData[index].userId,
@@ -355,8 +357,37 @@ const actionCodeSettings = {
         status,
         totalAmount,
         paymentType: checkoutData[index].paymentOption,
+        deliveryAddress: deliveryAddress,
       });
+
       // console.log("CHECK OUT DATA : ", orderData);
+
+      const allAddress = await userSchema.findById(userId).select("address");
+
+      for (let index = 0; index < allAddress.address.length; index++) {
+        const element = allAddress.address[index];
+        if (
+          element.street === deliveryAddress.street &&
+          element.city === deliveryAddress.city &&
+          element.state === deliveryAddress.state &&
+          element.pincode === deliveryAddress.pincode
+        ) {
+          addressFound = true;
+        } else {
+          continue;
+        }
+      }
+
+      if (!addressFound) {
+        allAddress.address.push(deliveryAddress);
+        console.log("Adding Address...");
+
+        const updateAddress = await userSchema.findByIdAndUpdate(userId, {
+          address: allAddress.address,
+        });
+      }
+
+      // console.log("Address Found : ", allAddress);
 
       const orderAdd = await orderData.save();
       // console.log("Order Add : ", orderAdd);
@@ -392,12 +423,12 @@ const actionCodeSettings = {
             prodQuantity: newQuantity,
           }
         );
-        console.log(
-          "Total Quantity : ",
-          productData.prodQuantity,
-          "New Data : ",
-          updatedProdData
-        );
+        // console.log(
+        //   "Total Quantity : ",
+        //   productData.prodQuantity,
+        //   "New Data : ",
+        //   updatedProdData
+        // );
       }
     }
     res.status(200).json({ message: "Order Placed Successfully" });
