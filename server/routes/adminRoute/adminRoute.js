@@ -153,15 +153,10 @@ router.get("/allusers", allUsers, async (req, res) => {
             dbUserData._id,
             { emailVerified: fbUserData.emailVerified }
           );
-
-          // console.log("Update : ", emailVerifiedUpdate)
-          // dbUserData.emailVerified = fbUserData.emailVerified;
         }
       }
     }
-    // console.log("User Id : ", user._id)
   }
-  // console.log("usersList : ", usersList.length);
   if (usersList.length == 0) {
     console.log("Users Not found");
   } else {

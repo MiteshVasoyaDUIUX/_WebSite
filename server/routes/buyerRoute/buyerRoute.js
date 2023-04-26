@@ -248,16 +248,34 @@ const actionCodeSettings = {
     }
   });
 
-  router.get("/fetchwishlist/:id", protectBuyer, async (req, res) => {
+  router.get("/fetchwishlistprodid/:id", protectBuyer, async (req, res) => {
     // const productId = req.body.productId;
     const id = req.params.id;
-    // const token = req.token;
-
-    // console.log("USER ID", id);
 
     const wishlist = await userSchema.findById(id).select("wishlist");
     // console.log("Users Wishlist : ", wishlist.wishlist);
     res.json(wishlist.wishlist);
+  });
+
+  router.get("/fetchwishlistproducts/:id", protectBuyer, async (req, res) => {
+    // const productId = req.body.productId;
+    const id = req.params.id;
+    let wishlistProducts = [];
+
+    const wishlist = await userSchema.findById(id).select("wishlist");
+
+    for (let index = 0; index < wishlist.wishlist.length; index++) {
+      const productId = wishlist.wishlist[index];
+
+      const findProduct = await productSchema
+        .findById(productId)
+        .select("-date -prodCategory -reviews -rating -prodQuantity -paymentType -prodImage -discount");
+
+      wishlistProducts.push(findProduct);
+    }
+
+    // console.log("Found Products : ", wishlistProducts);
+    res.json(wishlistProducts);
   });
 
   router.get("/fetchcart/:id", protectBuyer, async (req, res) => {
@@ -305,23 +323,51 @@ const actionCodeSettings = {
     // console.log("User id : ", userId)
 
     const orders = await orderSchema.find({ userId });
-    // console.log("Orders : ", orders);
+
+    console.log("orders : ", orders);
 
     if (orders) {
       res.status(200).json(orders);
     } else {
       res.json({ message: "No Order" });
     }
-    // try {
-    //   if (role === "buyer") {
-    //     const orders = await orderSchema.find({ userId });
-    //     res.json(orders);
-    //   } else {
-    //     res.end("Not Buyer");
-    //   }
-    // } catch (error) {
-    //   console.log("Error : ", error);
-    // }
+  });
+
+  router.post("/rating", protectView, async (req, res) => {
+    const ratingData = req.body;
+    const userId = req.body.userId;
+    const orderId = req.body.orderId;
+    const productId = req.body.productId;
+    const ratingValue = req.body.ratingValue;
+
+    const product = await productSchema
+      .findById(productId)
+      .select("prodName rating reviews");
+
+    let reviews = product.reviews;
+    let rating = product.rating;
+
+    const newRating =
+      (rating * reviews.length + ratingValue) / (reviews.length + 1);
+
+    const newReview = {
+      userId,
+      rating: ratingValue,
+    };
+
+    reviews.push(newReview);
+
+    const updateRating = await productSchema.findByIdAndUpdate(productId, {
+      reviews: reviews,
+      rating: newRating.toFixed(1),
+    });
+
+    const updateOrder = await orderSchema.findByIdAndUpdate(orderId, {
+      rating: ratingValue,
+    });
+    console.log("updateOrder : ", updateOrder);
+
+    res.status(200).end();
   });
 
   //Call this when User select item and Pass ItemId in Params with URL...
@@ -329,8 +375,6 @@ const actionCodeSettings = {
     const userId = req.user.id;
     const checkoutData = req.body;
     const status = "pending";
-
-    // console.log("In Place Order Part...", checkoutData.length);
 
     const date = new Date();
     const orderDate =
@@ -359,8 +403,6 @@ const actionCodeSettings = {
         paymentType: checkoutData[index].paymentOption,
         deliveryAddress: deliveryAddress,
       });
-
-      // console.log("CHECK OUT DATA : ", orderData);
 
       const allAddress = await userSchema.findById(userId).select("address");
 

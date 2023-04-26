@@ -40,6 +40,10 @@ const orderSchema = new mongoose.Schema(
       type: Object,
       required: true,
     },
+    rating: {
+      type: Number,
+      required: false,
+    },
   },
   {
     timestamps: {

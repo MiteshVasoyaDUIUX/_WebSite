@@ -22,37 +22,36 @@ router.post("/login", async (req, res) => {
 
   try {
     const userFromFirebase = await verify.signInUser(email, password);
-
     userData = userFromFirebase;
-    // console.log("Auth IN login ", userData);
-
-    // console.log("userFromFirebase : ", userFromFirebase)
     const userId = userFromFirebase.user.uid;
 
     const findInMDB = await userSchema.find({ _id: userId });
 
     const token = await generateToken(userId, findInMDB[0].role);
-    // console.log("userId in Mongo : ", token);
 
     if (findInMDB[0].role === "buyer") {
-      // console.log(`/buyer`);
       res.redirect(`/buyer?token=${token}`);
     } else if (findInMDB[0].role === "admin") {
-      // console.log("Admin Panel", findInMDB);
       res.redirect(`/admin?token=${token}`);
     }
-    // else if (findInMDB.role === "vendor") {
-    //   res.redirect(`/vendor?token=${token}`);
-    // }
+
+    res.json();
   } catch (error) {
     console.log("Error : ", error);
-  }
 
-  res.json();
+    if (error.code === "auth/user-not-found") {
+      res.status(404).json({ message: "User Not Found" });
+    }
+    if (error.code === "auth/wrong-password") {
+      res.status(404).json({ message: "Email or Password is Incorrect" });
+    }
+  }
 });
 
 router.get("/user/verification", protectView, async (req, res) => {
   const user = req.user;
+
+  let time = 0;
 
   console.log("User Email : ", user._id);
 
@@ -65,7 +64,11 @@ router.get("/user/verification", protectView, async (req, res) => {
 
     currentUser.reload();
 
-    console.log("CUUUUU : ", currentUser.emailVerified);
+    console.log("Is Verified : ", currentUser.emailVerified, time);
+
+    if (time === 60) {
+      clearInterval(interval);
+    }
 
     if (currentUser.emailVerified) {
       clearInterval(interval);
@@ -79,9 +82,17 @@ router.get("/user/verification", protectView, async (req, res) => {
 
       res.json({ isVerified: true, user: updateData });
     }
-  }, 3000);
+
+    time++;
+  }, 2000);
 
   // console.log("LLINK L :", userVerification)
+});
+
+router.get("/user/updateuserdata", protectView, async (req, res) => {
+  const userData = await userSchema.findById(req.user._id);
+  console.log("req.user : ", userData);
+  res.json(userData);
 });
 
 //User Registration...
@@ -92,11 +103,10 @@ router.post("/register", async (req, res) => {
   // console.log("Data Entered By User : ", name, email, password, role);
   const findUser = await userSchema.findOne({ email });
   if (findUser) {
-    res.status(401).end();
+    res.status(404).json({ message: "User Already Exist" });
   } else {
     try {
       const userAdd = await verify.addUser(email, password);
-      const userVerification = await verify.verifyUser(actionCodeSettings);
 
       console.log("Added User : ", userAdd);
       console.log("Phone Number : ", phoneNumber);
@@ -118,23 +128,19 @@ router.post("/register", async (req, res) => {
 
       const token = await generateToken(userId, role);
 
-      //Checking for Email Verification Status...
-      // setInterval(()=> {
-      //   const changedState = onAuthStateChanged(auth, (user) => {
-      //     console.log("SignedIn User Email Verification Status : ", user.emailVerified);
-      //   })
-      // }, 5000);
-
       if (uSchema.role === "buyer") {
         console.log(`/buyer`);
         res.redirect(`/buyer?token=${token}`);
       } else if (uSchema.role === "admin") {
         res.redirect(`/admin?token=${token}`);
       }
-
       console.log("Firebase User Verification Response : ", userVerification);
     } catch (error) {
       console.log(error);
+
+      if (error.code === "auth/user-not-found") {
+        res.status(404).json({ message: error.code });
+      }
     }
   }
 });
