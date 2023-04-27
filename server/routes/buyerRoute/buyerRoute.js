@@ -248,6 +248,30 @@ const actionCodeSettings = {
     }
   });
 
+  router.put("/removewishlist/:id", protectBuyer, async (req, res) => {
+    const productId = req.body.productId;
+    const id = req.params.id;
+    // const token = req.token;
+
+    console.log("PRODUCT ID", productId);
+
+    const response = await userSchema.findById(id).select("wishlist");
+
+    console.log("Wishlist Response : ", response.wishlist);
+
+    const inWishlist = response.wishlist;
+
+    const isAddedtoWishlist = inWishlist.includes(productId);
+
+    inWishlist.splice(inWishlist.indexOf(productId), 1);
+
+    const removeFromWishlist = await userSchema.findByIdAndUpdate(id, {
+      wishlist: inWishlist,
+    });
+
+    res.json({productId});
+  });
+
   router.get("/fetchwishlistprodid/:id", protectBuyer, async (req, res) => {
     // const productId = req.body.productId;
     const id = req.params.id;
@@ -269,7 +293,7 @@ const actionCodeSettings = {
 
       const findProduct = await productSchema
         .findById(productId)
-        .select("-date -prodCategory -reviews -rating -prodQuantity -paymentType -prodImage -discount");
+        .select("-date -prodCategory -prodQuantity -paymentType -discount");
 
       wishlistProducts.push(findProduct);
     }
