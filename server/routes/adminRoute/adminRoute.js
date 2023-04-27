@@ -186,7 +186,7 @@ router.get("/allorders/monthwise", allUsers, async (req, res) => {
 });
 
 router.get("/allorders", allUsers, async (req, res) => {
-  const allOrders = await orderSchema.find().populate("userId");
+  const allOrders = await orderSchema.find().populate("userId").sort({ createdAt: -1 });
   // console.log("ALL Orders : ", allOrders);
   res.json(allOrders);
 });

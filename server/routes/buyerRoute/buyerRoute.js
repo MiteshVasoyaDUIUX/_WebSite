@@ -269,7 +269,7 @@ const actionCodeSettings = {
       wishlist: inWishlist,
     });
 
-    res.json({productId});
+    res.json({ productId });
   });
 
   router.get("/fetchwishlistprodid/:id", protectBuyer, async (req, res) => {
@@ -346,7 +346,7 @@ const actionCodeSettings = {
 
     // console.log("User id : ", userId)
 
-    const orders = await orderSchema.find({ userId });
+    const orders = await orderSchema.find({ userId }).sort({ createdAt: -1 });
 
     console.log("orders : ", orders);
 
