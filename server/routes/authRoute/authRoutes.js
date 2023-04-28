@@ -15,86 +15,6 @@ const actionCodeSettings = {
 
 let userData = {};
 
-//User Login...
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  // const user = await userSchema.findOne({ email });
-
-  try {
-    const userFromFirebase = await verify.signInUser(email, password);
-    userData = userFromFirebase;
-    const userId = userFromFirebase.user.uid;
-
-    const findInMDB = await userSchema.find({ _id: userId });
-
-    const token = await generateToken(userId, findInMDB[0].role);
-
-    if (findInMDB[0].role === "buyer") {
-      res.redirect(`/buyer?token=${token}`);
-    } else if (findInMDB[0].role === "admin") {
-      res.redirect(`/admin?token=${token}`);
-    }
-
-    res.json();
-  } catch (error) {
-    console.log("Error : ", error);
-
-    if (error.code === "auth/user-not-found") {
-      res.status(404).json({ message: "User Not Found" });
-    }
-    if (error.code === "auth/wrong-password") {
-      res.status(404).json({ message: "Email or Password is Incorrect" });
-    }
-  }
-});
-
-router.get("/user/verification", protectView, async (req, res) => {
-  const user = req.user;
-
-  let time = 0;
-
-  console.log("User Email : ", user._id);
-
-  // console.log("Verification : ", auth.currentUser)
-  // console.log("UATUH : ", userData);
-  const userVerification = await verify.verifyUser(actionCodeSettings);
-
-  const interval = setInterval(async () => {
-    const currentUser = await verify.curUser();
-
-    currentUser.reload();
-
-    console.log("Is Verified : ", currentUser.emailVerified, time);
-
-    if (time === 60) {
-      clearInterval(interval);
-    }
-
-    if (currentUser.emailVerified) {
-      clearInterval(interval);
-      await userSchema.findByIdAndUpdate(user._id, {
-        emailVerified: true,
-      });
-
-      const updateData = await userSchema.findById(user._id);
-
-      console.log("Updated data : ", updateData);
-
-      res.json({ isVerified: true, user: updateData });
-    }
-
-    time++;
-  }, 2000);
-
-  // console.log("LLINK L :", userVerification)
-});
-
-router.get("/user/updateuserdata", protectView, async (req, res) => {
-  const userData = await userSchema.findById(req.user._id);
-  console.log("req.user : ", userData);
-  res.json(userData);
-});
-
 //User Registration...
 router.post("/register", async (req, res) => {
   const { name, email, password, phoneNumber, role, address } = req.body;
@@ -134,7 +54,6 @@ router.post("/register", async (req, res) => {
       } else if (uSchema.role === "admin") {
         res.redirect(`/admin?token=${token}`);
       }
-      console.log("Firebase User Verification Response : ", userVerification);
     } catch (error) {
       console.log(error);
 
@@ -144,6 +63,101 @@ router.post("/register", async (req, res) => {
     }
   }
 });
+
+//User Login...
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const userFromFirebase = await verify.signInUser(email, password);
+    userData = userFromFirebase;
+    const userId = userFromFirebase.user.uid;
+
+    const findInMDB = await userSchema.find({ _id: userId });
+
+    const token = await generateToken(userId, findInMDB[0].role);
+
+    if (findInMDB[0].role === "buyer") {
+      res.redirect(`/buyer?token=${token}`);
+    } else if (findInMDB[0].role === "admin") {
+      res.redirect(`/admin?token=${token}`);
+    }
+
+    res.json();
+  } catch (error) {
+    console.log("Error : ", error);
+
+    if (error.code === "auth/user-not-found") {
+      res.status(404).json({ message: "User Not Found" });
+    }
+    if (error.code === "auth/wrong-password") {
+      res.status(404).json({ message: "Email or Password is Incorrect" });
+    }
+  }
+});
+
+router.post("/resetpassword", async (req, res) => {
+  const email = req.body.email;
+
+  const findEmail = await userSchema.findOne({ email }).select("name email");
+
+  if (!findEmail) {
+    res
+      .status(401)
+      .json({ message: `Account with Email Address "${email}" not found` });
+  } else {
+    // console.log("Email Id Exists : ", findEmail);
+
+    const passwordReset = await verify.sendPasswordResetEmailLink(
+      email
+    );
+  }
+});
+
+router.get("/user/verification", protectView, async (req, res) => {
+  const user = req.user;
+
+  let time = 0;
+
+  console.log("User Email : ", user._id);
+
+  const userVerification = await verify.verifyUser(actionCodeSettings);
+
+  const interval = setInterval(async () => {
+    const currentUser = await verify.curUser();
+
+    currentUser.reload();
+
+    console.log("Is Verified : ", currentUser.emailVerified, time);
+
+    if (time === 60) {
+      clearInterval(interval);
+    }
+
+    if (currentUser.emailVerified) {
+      clearInterval(interval);
+      await userSchema.findByIdAndUpdate(user._id, {
+        emailVerified: true,
+      });
+
+      const updateData = await userSchema.findById(user._id);
+
+      console.log("Updated data : ", updateData);
+
+      res.json({ isVerified: true, user: updateData });
+    }
+
+    time++;
+  }, 2000);
+});
+
+router.get("/user/updateuserdata", protectView, async (req, res) => {
+  const userData = await userSchema.findById(req.user._id);
+  console.log("req.user : ", userData);
+  res.json(userData);
+});
+
+//User Registration...
 
 router.post("/logout", async (req, res) => {
   const { email, password } = req.body;

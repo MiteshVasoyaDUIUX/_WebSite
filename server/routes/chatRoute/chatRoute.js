@@ -77,15 +77,11 @@ router.get(
       .limit(to)
       .sort({ _id: -1 });
 
-    //Reverse the result...
-
     if (Number(to) + Number(from) - 1 < totalMsg.length) {
       moreMsg = true;
     } else {
       moreMsg = false;
     }
-
-    console.log("from : ", from);
 
     const newMessageObj = {
       conversationId: conversationId,
@@ -94,8 +90,6 @@ router.get(
       moreMsg,
       nextMsgFrom: Number(from) + Number(to),
     };
-
-    // console.log("Conversation Data : ", newMessageObj.nextMsgFrom);
 
     res.json(newMessageObj);
   }

@@ -9,6 +9,7 @@ const {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  sendPasswordResetEmail,
 } = require("firebase/auth");
 require("firebase/auth");
 require("firebase/firestore");
@@ -46,12 +47,21 @@ exports.addUser = (email, password) => {
   return userCreatedd;
 };
 
+//SignIn User...
+exports.signInUser = async (email, password) => {
+  const signIn = await signInWithEmailAndPassword(auth, email, password);
+  userAuth = auth.currentUser;
+  console.log("SIGN IN VAR :", userAuth, auth.currentUser);
+  return signIn;
+};
+
 // Verify User with Link Sent to Email...
-
 exports.verifyUser = (actionCodeSettings) => {
-
-  // console.log("verifyUser : ", userAuth, auth.currentUser);
-  const verification = sendEmailVerification(auth.currentUser, actionCodeSettings).catch((e) => {
+  console.log("verifyUser : ", userAuth, auth.currentUser);
+  const verification = sendEmailVerification(
+    auth.currentUser,
+    actionCodeSettings
+  ).catch((e) => {
     console.log("Error : ", e);
     console.log("Firebase Config : ", firebaseConfig);
   });
@@ -59,15 +69,20 @@ exports.verifyUser = (actionCodeSettings) => {
 
 exports.curUser = () => {
   return auth.currentUser;
-}
-
-//SignIn User...
-exports.signInUser = async (email, password) => {
-  const signIn = await signInWithEmailAndPassword(auth, email, password);
-  userAuth = auth.currentUser;
-  console.log("SIGN IN VAR :", userAuth, auth.currentUser)
-  return signIn;
 };
+
+exports.sendPasswordResetEmailLink = (email) => {
+  console.log("Sending Reset Link....", email);
+  const sendPasswordResetLink = sendPasswordResetEmail(auth, email).then().catch(
+    (error) => {
+      console.log("Error : ", error);
+    }
+  );
+
+  console.log("Send Reset Link : ", sendPasswordResetLink);
+};
+
+//Signout User...
 exports.signOutUser = () =>
   signOut(auth).catch((Error) => {
     console.log("Error While Signing Out : ", Error);

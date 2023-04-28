@@ -9,7 +9,6 @@ const {
 } = require("../../middleware/authMiddleware");
 const productSchema = require("../../schema/productSchema");
 const userSchema = require("../../schema/userSchema");
-const imageToBase = require("image-to-base64");
 
 const {
   getStorage,
@@ -26,6 +25,7 @@ const verify = require("../../firebase/config");
 const orderSchema = require("../../schema/orderSchema");
 const conversationIdSchema = require("../../schema/conversationIdSchema");
 const chatSchema = require("../../schema/chatSchema");
+
 const storage = getStorage();
 
 const multer = require("multer");
@@ -77,6 +77,7 @@ router.post(
       prodPrice,
       prodMRP,
       paymentType,
+      prodImage,
     } = req.body;
 
     const createDate = new Date(Date.now());
@@ -85,7 +86,7 @@ router.post(
       .split(",")[0];
 
     const files = req.files;
-    // console.log("Files Length: ", files);
+    console.log("Files: ", req.files, "prodImage: ", prodImage);
 
     for (let index = 0; index < files.length; index++) {
       const bytes = files[index].buffer;
@@ -107,7 +108,7 @@ router.post(
         });
     }
 
-    // console.log("Prod Image Array : ", prodImageArray);
+    console.log("Prod Image Array : ", prodImageArray);
 
     const newProduct = new productSchema({
       prodName: prodName[0],
@@ -121,9 +122,8 @@ router.post(
       date,
     });
 
+    console.log("Product Add Response :  ", newProduct);
     const productAdd = await newProduct.save();
-
-    // console.log("Product Add Response :  ", newProduct);
 
     res.json(productAdd);
   }
@@ -186,7 +186,10 @@ router.get("/allorders/monthwise", allUsers, async (req, res) => {
 });
 
 router.get("/allorders", allUsers, async (req, res) => {
-  const allOrders = await orderSchema.find().populate("userId").sort({ createdAt: -1 });
+  const allOrders = await orderSchema
+    .find()
+    .populate("userId")
+    .sort({ createdAt: -1 });
   // console.log("ALL Orders : ", allOrders);
   res.json(allOrders);
 });
