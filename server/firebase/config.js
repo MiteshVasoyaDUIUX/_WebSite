@@ -73,13 +73,17 @@ exports.curUser = () => {
 
 exports.sendPasswordResetEmailLink = (email) => {
   console.log("Sending Reset Link....", email);
-  const sendPasswordResetLink = sendPasswordResetEmail(auth, email).then().catch(
-    (error) => {
+  const sendPasswordResetLink = sendPasswordResetEmail(auth, email)
+    .then((response) => {
+      // console.log("Then : ", response);
+    })
+    .catch((error) => {
       console.log("Error : ", error);
-    }
-  );
+    });
 
   console.log("Send Reset Link : ", sendPasswordResetLink);
+
+  return sendPasswordResetEmail;
 };
 
 //Signout User...

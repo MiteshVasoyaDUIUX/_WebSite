@@ -108,9 +108,9 @@ router.post("/resetpassword", async (req, res) => {
   } else {
     // console.log("Email Id Exists : ", findEmail);
 
-    const passwordReset = await verify.sendPasswordResetEmailLink(
-      email
-    );
+    const passwordReset = await verify.sendPasswordResetEmailLink(email);
+
+    console.log("Password Reset Response : ", passwordReset);
   }
 });
 
