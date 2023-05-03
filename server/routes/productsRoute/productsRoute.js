@@ -18,11 +18,9 @@ router.get("/", async (req, res) => {
 router.get("/search/:quary", async (req, res) => {
   const quary = req.params.quary;
   console.log("Quary : ", quary);
-  const quaryregex = new RegExp(`\\\\b${quary}\\\\b`, "i");
   const searchedProducts = await productSchema.find({
     prodName: { "$regex": `${quary}`, "$options": "i" } ,
   });
-  console.log("Searched Products : ", searchedProducts);
   res.json(searchedProducts);
 });
 
@@ -40,5 +38,18 @@ router.get("/product/:id", async (req, res) => {
   //   res.status(404);
   // }
 });
+
+router.get("/newarrivals", async (req, res) => {
+  const product = await productSchema.find();
+  console.log("Found One Product  : ", product.length);
+  res.json(product);
+});
+
+router.get("/trendingproducts", async (req, res) => {
+  const product = await productSchema.find().sort({rating : -1});
+  // console.log("Found One Product  : ", product.length);
+  res.json(product);
+});
+
 
 module.exports = router;

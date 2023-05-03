@@ -44,10 +44,47 @@ const actionCodeSettings = {
     }
   });
 
+  router.get("/fetchcart/:id", protectBuyer, async (req, res) => {
+    // const productId = req.body.productId;
+    const id = req.params.id;
+    // const token = req.token;
+
+    console.log("USER ID", id);
+
+    const cart = await userSchema.findById(id).select("cart");
+    const cartLength = cart.cart.length;
+    let cartProducts = [];
+
+    // console.log("Users Wishlist : ", cart.cart);
+    // console.log("Cart : ", cart.cart[0].quantity);
+
+    for (let i = 0; i < cartLength; i++) {
+      const product = await productSchema.findById(cart.cart[i].productId);
+      let newProduct = {
+        _id: product._id,
+        prodName: product.prodName,
+        prodDesc: product.prodDesc,
+        prodCategory: product.prodCategory,
+        prodQuantity: product.prodQuantity,
+        prodPrice: product.prodPrice,
+        discount: product.discount,
+        rating: product.rating,
+        deliveryType: product.deliveryType,
+        prodImage: product.prodImage,
+        date: product.date,
+        quantity: cart.cart[i].quantity,
+      };
+      cartProducts.push(newProduct);
+      // console.log("PRODUCTS : ", newProduct)
+    }
+    // console.log("Cart Product : ", cart.cart);
+
+    res.json(cartProducts);
+  });
+
   router.put("/addtocart/:id", protectBuyer, async (req, res) => {
     const productId = req.body.productId;
     const id = req.params.id;
-    // const token = req.token;
 
     console.log("PRODUCT ID", productId);
 
@@ -94,7 +131,7 @@ const actionCodeSettings = {
 
         const newCart = await userSchema.findById(id).select("cart");
 
-        res.json(newCart.cart);
+        res.status(200).json({message : "Product Added To Cart"});
       }
     }
   });
@@ -140,7 +177,6 @@ const actionCodeSettings = {
         quantity: newCart.cart[i].quantity,
       };
       cartProducts.push(newProduct);
-      // console.log("PRODUCTS : ", newProduct)
     }
     console.log("Cart Product : ", cartProducts);
 
@@ -300,44 +336,6 @@ const actionCodeSettings = {
 
     // console.log("Found Products : ", wishlistProducts);
     res.json(wishlistProducts);
-  });
-
-  router.get("/fetchcart/:id", protectBuyer, async (req, res) => {
-    // const productId = req.body.productId;
-    const id = req.params.id;
-    // const token = req.token;
-
-    console.log("USER ID", id);
-
-    const cart = await userSchema.findById(id).select("cart");
-    const cartLength = cart.cart.length;
-    let cartProducts = [];
-
-    // console.log("Users Wishlist : ", cart.cart);
-    // console.log("Cart : ", cart.cart[0].quantity);
-
-    for (let i = 0; i < cartLength; i++) {
-      const product = await productSchema.findById(cart.cart[i].productId);
-      let newProduct = {
-        _id: product._id,
-        prodName: product.prodName,
-        prodDesc: product.prodDesc,
-        prodCategory: product.prodCategory,
-        prodQuantity: product.prodQuantity,
-        prodPrice: product.prodPrice,
-        discount: product.discount,
-        rating: product.rating,
-        deliveryType: product.deliveryType,
-        prodImage: product.prodImage,
-        date: product.date,
-        quantity: cart.cart[i].quantity,
-      };
-      cartProducts.push(newProduct);
-      // console.log("PRODUCTS : ", newProduct)
-    }
-    // console.log("Cart Product : ", cart.cart);
-
-    res.json(cartProducts);
   });
 
   //Get all orders placed by the user...
