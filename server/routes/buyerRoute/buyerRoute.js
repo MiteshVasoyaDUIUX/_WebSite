@@ -16,6 +16,7 @@ const chatSchema = require("../../schema/chatSchema");
 const conversationIdSchema = require("../../schema/conversationIdSchema");
 const verify = require("../../firebase/config");
 const { getAuth } = require("firebase/auth");
+const couponCodeSchema = require("../../schema/couponCodeSchema");
 const auth = getAuth();
 
 const adminId = "aUS1ZeUBOHeZwYdiKlFV4wIPpvh2";
@@ -131,7 +132,7 @@ const actionCodeSettings = {
 
         const newCart = await userSchema.findById(id).select("cart");
 
-        res.status(200).json({message : "Product Added To Cart"});
+        res.status(200).json({ message: "Product Added To Cart" });
       }
     }
   });
@@ -334,15 +335,12 @@ const actionCodeSettings = {
       wishlistProducts.push(findProduct);
     }
 
-    // console.log("Found Products : ", wishlistProducts);
     res.json(wishlistProducts);
   });
 
   //Get all orders placed by the user...
   router.get("/fetchallorders/:id", protectView, async (req, res) => {
     const userId = req.user.id;
-
-    // console.log("User id : ", userId)
 
     const orders = await orderSchema.find({ userId }).sort({ createdAt: -1 });
 
@@ -499,4 +497,20 @@ const actionCodeSettings = {
   });
 }
 
+router.get("/applycoupon/:couponcode", async (req, res) => {
+  const coupon = await couponCodeSchema.findOne({
+    couponcode: req.params.couponcode,
+  });
+  // console.log("Found Coupon : ", coupon);
+
+  if (coupon?.quantity < 0 || coupon === null) {
+    res.status(200).json({ message: "Coupon is not valid..." });
+  } else {
+    res.status(200).json({
+      discount: coupon.discount,
+      couponcode: coupon.couponcode,
+      message: "Coupon Applied Successfully",
+    });
+  }
+});
 module.exports = router;

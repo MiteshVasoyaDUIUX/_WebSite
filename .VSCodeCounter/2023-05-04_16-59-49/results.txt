@@ -1,0 +1,67 @@
+Date : 2023-05-04 16:59:49
+Directory : d:\Mitesh\_WebSite
+Total : 25 files,  10417 codes, 115 comments, 372 blanks, all 10904 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| JSON       |          6 |      8,875 |          0 |          6 |      8,881 |
+| JavaScript |         17 |      1,533 |        115 |        365 |      2,013 |
+| Properties |          1 |          8 |          0 |          0 |          8 |
+| Markdown   |          1 |          1 |          0 |          1 |          2 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                          | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                             |         25 |     10,417 |        115 |        372 |     10,904 |
+| . (Files)                                                                     |          6 |      8,266 |          0 |          5 |      8,271 |
+| server                                                                        |         16 |      1,470 |        111 |        347 |      1,928 |
+| server (Files)                                                                |          1 |         33 |          0 |          8 |         41 |
+| server\db                                                                     |          1 |         19 |          0 |          4 |         23 |
+| server\firebase                                                               |          1 |         79 |          7 |         20 |        106 |
+| server\middleware                                                             |          1 |        166 |         18 |         33 |        217 |
+| server\routes                                                                 |          6 |        978 |         86 |        264 |      1,328 |
+| server\routes\adminRoute                                                      |          1 |        261 |         23 |         63 |        347 |
+| server\routes\authRoute                                                       |          1 |        136 |         13 |         43 |        192 |
+| server\routes\buyerRoute                                                      |          1 |        378 |         31 |        108 |        517 |
+| server\routes\chatRoute                                                       |          1 |        113 |          3 |         31 |        147 |
+| server\routes\productsRoute                                                   |          1 |         34 |         11 |         11 |         56 |
+| server\routes\vendorRoute                                                     |          1 |         56 |          5 |          8 |         69 |
+| server\schema                                                                 |          6 |        195 |          0 |         18 |        213 |
+| socketIO                                                                      |          3 |        681 |          4 |         20 |        705 |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                                      | language   | code       | comment    | blank      | total      |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| d:\Mitesh\_WebSite\.env                                                       | Properties |          8 |          0 |          0 |          8 |
+| d:\Mitesh\_WebSite\README.md                                                  | Markdown   |          1 |          0 |          1 |          2 |
+| d:\Mitesh\_WebSite\firebaseConf.json                                          | JSON       |         12 |          0 |          1 |         13 |
+| d:\Mitesh\_WebSite\package-lock.json                                          | JSON       |      8,190 |          0 |          1 |      8,191 |
+| d:\Mitesh\_WebSite\package.json                                               | JSON       |         43 |          0 |          1 |         44 |
+| d:\Mitesh\_WebSite\server\db\db.js                                            | JavaScript |         19 |          0 |          4 |         23 |
+| d:\Mitesh\_WebSite\server\firebase\config.js                                  | JavaScript |         79 |          7 |         20 |        106 |
+| d:\Mitesh\_WebSite\server\middleware\authMiddleware.js                        | JavaScript |        166 |         18 |         33 |        217 |
+| d:\Mitesh\_WebSite\server\routes\adminRoute\adminRoute.js                     | JavaScript |        261 |         23 |         63 |        347 |
+| d:\Mitesh\_WebSite\server\routes\authRoute\authRoutes.js                      | JavaScript |        136 |         13 |         43 |        192 |
+| d:\Mitesh\_WebSite\server\routes\buyerRoute\buyerRoute.js                     | JavaScript |        378 |         31 |        108 |        517 |
+| d:\Mitesh\_WebSite\server\routes\chatRoute\chatRoute.js                       | JavaScript |        113 |          3 |         31 |        147 |
+| d:\Mitesh\_WebSite\server\routes\productsRoute\productsRoute.js               | JavaScript |         34 |         11 |         11 |         56 |
+| d:\Mitesh\_WebSite\server\routes\vendorRoute\vendorRoute.js                   | JavaScript |         56 |          5 |          8 |         69 |
+| d:\Mitesh\_WebSite\server\schema\chatSchema.js                                | JavaScript |         19 |          0 |          3 |         22 |
+| d:\Mitesh\_WebSite\server\schema\conversationIdSchema.js                      | JavaScript |          9 |          0 |          3 |         12 |
+| d:\Mitesh\_WebSite\server\schema\couponCodeSchema.js                          | JavaScript |         13 |          0 |          3 |         16 |
+| d:\Mitesh\_WebSite\server\schema\orderSchema.js                               | JavaScript |         54 |          0 |          3 |         57 |
+| d:\Mitesh\_WebSite\server\schema\productSchema.js                             | JavaScript |         52 |          0 |          3 |         55 |
+| d:\Mitesh\_WebSite\server\schema\userSchema.js                                | JavaScript |         48 |          0 |          3 |         51 |
+| d:\Mitesh\_WebSite\server\server.js                                           | JavaScript |         33 |          0 |          8 |         41 |
+| d:\Mitesh\_WebSite\shoppingsite-e25c4-firebase-adminsdk-6npj3-c0ab41c0ae.json | JSON       |         12 |          0 |          1 |         13 |
+| d:\Mitesh\_WebSite\socketIO\index.js                                          | JavaScript |         63 |          4 |         18 |         85 |
+| d:\Mitesh\_WebSite\socketIO\package-lock.json                                 | JSON       |        602 |          0 |          1 |        603 |
+| d:\Mitesh\_WebSite\socketIO\package.json                                      | JSON       |         16 |          0 |          1 |         17 |
+| Total                                                                         |            |     10,417 |        115 |        372 |     10,904 |
++-------------------------------------------------------------------------------+------------+------------+------------+------------+------------+

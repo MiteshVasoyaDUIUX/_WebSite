@@ -3,7 +3,7 @@ mongoose.set("strictQuery", false);
 
 const connection = async () => {
     try {
-        const conn = await mongoose.connect("mongodb://0.0.0.0:27017",{
+        const conn = await mongoose.connect("mongodb+srv://mitesh:mitesh@cluster0.hv26mi7.mongodb.net/?retryWrites=true&w=majority",{
             useNewUrlParser: true, 
             useUnifiedTopology: true,
             connectTimeoutMS : 4000
