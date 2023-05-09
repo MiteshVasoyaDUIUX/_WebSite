@@ -70,7 +70,9 @@ router.get(
     const conversationData = await conversationIdSchema.findById(
       conversationId
     );
+
     const totalMsg = await chatSchema.find({ conversationId });
+
     const reversedMsg = await chatSchema
       .find({ conversationId })
       .skip(skipData)
@@ -119,11 +121,9 @@ router.get("/fetch/conversations", protectChat, async (req, res) => {
     };
 
     allConversation.push(conversationData);
-
-    // console.log("User ID : ", userData);
   }
 
-  console.log("asasa", "allConversation");
+  // console.log("asasa", "allConversation");
   res.json(allConversation);
 });
 

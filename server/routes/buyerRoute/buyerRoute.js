@@ -34,7 +34,7 @@ const actionCodeSettings = {
     const token = req.token;
 
     if (role === "buyer") {
-      console.log("allOrders");
+      // console.log("allOrders");
       res.json({
         user,
         role,
@@ -344,7 +344,7 @@ const actionCodeSettings = {
 
     const orders = await orderSchema.find({ userId }).sort({ createdAt: -1 });
 
-    console.log("orders : ", orders);
+    // console.log("orders : ", orders);
 
     if (orders) {
       res.status(200).json(orders);
@@ -396,6 +396,8 @@ const actionCodeSettings = {
     const checkoutData = req.body;
     const status = "pending";
 
+    console.log("Current Quantity : ", )
+
     const date = new Date();
     const orderDate =
       String(date.getDate()) +
@@ -405,8 +407,30 @@ const actionCodeSettings = {
       String(date.getFullYear());
 
     for (let index = 0; index < checkoutData.length; index++) {
-      const totalAmount =
-        checkoutData[index].productPrice * checkoutData[index].quantity;
+      let totalAmount;
+      let coupon;
+
+      if (checkoutData[index].couponCode) {
+        coupon = await couponCodeSchema.findOne({
+          couponcode: checkoutData[index].couponCode,
+        });
+        if (coupon && coupon.quantity > 0) {
+          totalAmount = Math.ceil(
+            (checkoutData[index].productPrice *
+              checkoutData[index].quantity *
+              (100 - coupon.discount)) /
+              100
+          );
+          console.log("Total Amount : ", totalAmount);
+        } else {
+          res.status(401).json({ message: "Coupon is not Valid" });
+          return;
+        }
+      } else {
+        totalAmount =
+          checkoutData[index].productPrice * checkoutData[index].quantity;
+      }
+
       const productId = checkoutData[index].productId;
       const orderQuantity = checkoutData[index].quantity;
       const deliveryAddress = checkoutData[index].deliveryAddress;
@@ -422,8 +446,10 @@ const actionCodeSettings = {
         totalAmount,
         paymentType: checkoutData[index].paymentOption,
         deliveryAddress: deliveryAddress,
+        couponApplied: coupon?.couponcode,
       });
 
+      // console.log("Order Schema : ", coupon.couponcode);
       const allAddress = await userSchema.findById(userId).select("address");
 
       for (let index = 0; index < allAddress.address.length; index++) {
@@ -485,12 +511,18 @@ const actionCodeSettings = {
             prodQuantity: newQuantity,
           }
         );
-        // console.log(
-        //   "Total Quantity : ",
-        //   productData.prodQuantity,
-        //   "New Data : ",
-        //   updatedProdData
-        // );
+
+        if (coupon) {
+          const reduceCouponQuantity = await couponCodeSchema
+            .findOne({
+              couponcode: coupon?.couponcode,
+            })
+            .select("quantity");
+          const updateQuantity = await couponCodeSchema.findByIdAndUpdate(
+            reduceCouponQuantity._id,
+            { quantity: reduceCouponQuantity.quantity - 1 }
+          );
+        }
       }
     }
     res.status(200).json({ message: "Order Placed Successfully" });
@@ -512,5 +544,63 @@ router.get("/applycoupon/:couponcode", async (req, res) => {
       message: "Coupon Applied Successfully",
     });
   }
+});
+
+router.post("/addaddress", protectView, async (req, res) => {
+  try {
+    const newAddress = req.body;
+    const user = req.user;
+
+    const findAddress = await userSchema.findById(user._id).select("address");
+
+    findAddress.address.push(newAddress);
+
+    const updateAddress = await userSchema.findByIdAndUpdate(user._id, {
+      address: findAddress.address,
+    });
+    // console.log("Adding New Address :", findAddress);
+    res.status(200).json(newAddress);
+  } catch (error) {
+    console.log("Error :", error.message);
+  }
+});
+
+router.post("/removeaddress", protectView, async (req, res) => {
+  try {
+    const reqAddress = req.body;
+
+    console.log("Remove Address/..;.")
+
+    const findAddress = await userSchema
+      .find({
+        "address.street": reqAddress.street,
+        "address.city": reqAddress.city,
+        "address.state": reqAddress.state,
+        "address.pincode": reqAddress.pincode,
+      })
+      .select("address");
+
+    const userId = findAddress[0].id;
+    const allAddress = findAddress[0].address;
+
+    for (let index = 0; index < allAddress.length; index++) {
+      if (
+        allAddress[index].street === reqAddress.street &&
+        allAddress[index].city === reqAddress.city &&
+        allAddress[index].state === reqAddress.state &&
+        allAddress[index].pincode === reqAddress.pincode
+      ) {
+        allAddress.splice(index, 1);
+        const removeAddress = await userSchema.findByIdAndUpdate(userId, {
+          address: allAddress,
+        });
+        res.status(200).json(index);
+        break;
+      }
+    }
+  } catch (error) {
+    console.log("Error : ", error.message);
+  }
+  // console.log("New Address Array  :", findAddress[0].id);
 });
 module.exports = router;

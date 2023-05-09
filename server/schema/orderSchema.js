@@ -40,8 +40,12 @@ const orderSchema = new mongoose.Schema(
       type: Object,
       required: true,
     },
-    rating: {
-      type: Number,
+    // rating: {
+    //   type: Number,
+    //   required: false,
+    // },
+    couponApplied: {
+      type: String,
       required: false,
     },
   },

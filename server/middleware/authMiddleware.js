@@ -35,7 +35,7 @@ const protectLoginRegister = asyncHandler(async (req, res, next) => {
 const protectView = asyncHandler(async (req, res, next) => {
   let token;
 
-  console.log("request headers : ", req.headers.authorization);
+  // console.log("request headers : ", req.headers.authorization);
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
