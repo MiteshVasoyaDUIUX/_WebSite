@@ -28,7 +28,6 @@ const productSchema = new mongoose.Schema({
   discount: {
     type: Number,
     required: true,
-    default: 0,
   },
   rating: {
     type: Number,
@@ -45,10 +44,10 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   reviews: {
-    type : Array,
-    required : false,
-    ref : "userSchema"
-  }
+    type: Array,
+    required: false,
+    ref: "userSchema",
+  },
 });
 
 module.exports = mongoose.model("product", productSchema);

@@ -110,6 +110,8 @@ router.post(
 
     console.log("Prod Image Array : ", prodImageArray);
 
+    const discount = ((prodMRP - prodPrice) * 100) / prodMRP;
+
     const newProduct = new productSchema({
       prodName: prodName[0],
       prodDesc: prodDesc[0],
@@ -119,6 +121,7 @@ router.post(
       prodMRP: prodMRP[0],
       paymentType: paymentType,
       prodImage: prodImageArray,
+      discount,
       date,
     });
 
