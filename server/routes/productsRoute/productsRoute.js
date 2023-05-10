@@ -4,7 +4,7 @@ const router = express.Router();
 const productSchema = require("../../schema/productSchema");
 
 //Get all orders placed by the user...
-router.post("/products/", async (req, res) => {
+router.get("/products/", async (req, res) => {
   const productCategory = req.query.category;
   const page = req.query.page;
   const to = 9;
@@ -50,13 +50,47 @@ router.post("/products/", async (req, res) => {
   }
 });
 
-router.get("/search/:quary", async (req, res) => {
-  const quary = req.quary;
-  console.log("Quary : ", quary);
-  const searchedProducts = await productSchema.find({
-    prodName: { $regex: `${quary}`, $options: "i" },
+router.get("/search", async (req, res) => {
+  const page = req.query.page;
+  const query = req.query.query;
+
+  const to = 9;
+  const filter = req.body;
+  let moreProduct;
+  let reqProdQuantity;
+
+  console.log("Req.Query : ", page);
+
+  const skipProducts = page * to - 9;
+
+  const totalProducts = await productSchema.find({
+    prodName: { $regex: `${query}`, $options: "i" },
   });
-  res.json(searchedProducts);
+
+  const resProducts = await productSchema
+    .find({
+      prodName: { $regex: `${query}`, $options: "i" },
+    })
+    .skip(skipProducts)
+    .limit(to);
+
+  moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+  const response = {
+    products: resProducts,
+    nextPage: Number(page) + 1,
+    moreProduct,
+  };
+
+  console.log("Total Products : ", totalProducts.length);
+  console.log("Limited Products : ", resProducts.length);
+  console.log("Sent Products : ", Number(page) * 9);
+
+  if (response) {
+    res.json(response);
+  } else {
+    res.status(404);
+  }
 });
 
 router.get("/product/:id", async (req, res) => {
