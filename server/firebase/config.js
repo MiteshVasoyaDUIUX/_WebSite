@@ -51,13 +51,13 @@ exports.addUser = (email, password) => {
 exports.signInUser = async (email, password) => {
   const signIn = await signInWithEmailAndPassword(auth, email, password);
   userAuth = auth.currentUser;
-  console.log("SIGN IN VAR :", userAuth, auth.currentUser);
+  // console.log("SIGN IN VAR :", userAuth, auth.currentUser);
   return signIn;
 };
 
 // Verify User with Link Sent to Email...
 exports.verifyUser = (actionCodeSettings) => {
-  console.log("verifyUser : ", userAuth, auth.currentUser);
+  // console.log("verifyUser : ", userAuth, auth.currentUser);
   const verification = sendEmailVerification(
     auth.currentUser,
     actionCodeSettings
@@ -72,7 +72,7 @@ exports.curUser = () => {
 };
 
 exports.sendPasswordResetEmailLink = (email) => {
-  console.log("Sending Reset Link....", email);
+  // console.log("Sending Reset Link....", email);
   const sendPasswordResetLink = sendPasswordResetEmail(auth, email)
     .then((response) => {
       // console.log("Then : ", response);
@@ -81,7 +81,7 @@ exports.sendPasswordResetEmailLink = (email) => {
       console.log("Error : ", error);
     });
 
-  console.log("Send Reset Link : ", sendPasswordResetLink);
+  // console.log("Send Reset Link : ", sendPasswordResetLink);
 
   return sendPasswordResetEmail;
 };

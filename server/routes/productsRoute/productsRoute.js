@@ -7,7 +7,8 @@ const productSchema = require("../../schema/productSchema");
 router.get("/products/", async (req, res) => {
   const productCategory = req.query.category;
   const page = req.query.page;
-  const to = 9;
+  const sortBy = req.query.sortBy;
+  const to = 18;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
@@ -18,78 +19,324 @@ router.get("/products/", async (req, res) => {
     reqProdQuantity = 1;
   }
 
-  const skipProducts = page * to - 9;
+  const newArrivals = async () => {
+    const skipProducts = page * to - 18;
 
-  const totalProducts = await productSchema.find({
-    prodCategory: { $regex: `${productCategory}`, $options: "i" },
-  });
-
-  const resProducts = await productSchema
-    .find({
+    const totalProducts = await productSchema.find({
       prodCategory: { $regex: `${productCategory}`, $options: "i" },
-    })
-    .skip(skipProducts)
-    .limit(to);
+    });
 
-  moreProduct = Number(to) * Number(page) < totalProducts.length;
+    const resProducts = await productSchema
+      .find({
+        prodCategory: { $regex: `${productCategory}`, $options: "i" },
+      })
+      .skip(skipProducts)
+      .limit(to);
 
-  const response = {
-    products: resProducts,
-    nextPage: Number(page) + 1,
-    moreProduct,
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    console.log("New Arrivals Total Products : ", totalProducts.length);
+    console.log("New Arrivals Limited Products : ", resProducts.length);
+    console.log("New Arrivals Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
   };
 
-  // console.log("Total Products : ", totalProducts.length);
-  // console.log("Limited Products : ", resProducts.length);
-  // console.log("Sent Products : ", Number(page) * 9);
+  const priceHighToLow = async () => {
+    const skipProducts = page * to - 18;
 
-  if (response) {
-    res.json(response);
-  } else {
-    res.status(404);
+    const totalProducts = await productSchema.find({
+      prodCategory: { $regex: `${productCategory}`, $options: "i" },
+    });
+
+    const resProducts = await productSchema
+      .find({
+        prodCategory: { $regex: `${productCategory}`, $options: "i" },
+      })
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ prodPrice: -1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    // console.log("Total Products : ", totalProducts.length);
+    console.log("Limited Products Price Hight To Low : ", resProducts.length);
+    // console.log("Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  const priceLowToHigh = async () => {
+    const skipProducts = page * to - 18;
+
+    const totalProducts = await productSchema.find({
+      prodCategory: { $regex: `${productCategory}`, $options: "i" },
+    });
+
+    const resProducts = await productSchema
+      .find({
+        prodCategory: { $regex: `${productCategory}`, $options: "i" },
+      })
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ prodPrice: 1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    // console.log("Total Products : ", totalProducts.length);
+    console.log("Limited Products Price Hight To Low : ", resProducts.length);
+    // console.log("Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  const highRating = async () => {
+    const skipProducts = page * to - 18;
+
+    const totalProducts = await productSchema.find({
+      prodCategory: { $regex: `${productCategory}`, $options: "i" },
+    });
+
+    const resProducts = await productSchema
+      .find({
+        prodCategory: { $regex: `${productCategory}`, $options: "i" },
+      })
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ rating: -1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  switch (sortBy) {
+    case "newArrivals":
+      newArrivals();
+      break;
+
+    case "priceHighToLow":
+      priceHighToLow();
+      break;
+
+    case "priceLowToHigh":
+      priceLowToHigh();
+      break;
+
+    case "highRating":
+      highRating();
+      break;
+
+    default:
+      break;
   }
 });
 
 router.get("/search", async (req, res) => {
   const page = req.query.page;
   const query = req.query.query;
-
-  const to = 9;
+  const sortBy = req.query.sortBy;
+  const to = 18;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
 
-  console.log("Req.Query : ", page);
+  if (filter.outOfStock) {
+    reqProdQuantity = 0;
+  } else {
+    reqProdQuantity = 1;
+  }
 
-  const skipProducts = page * to - 9;
+  const newArrivals = async () => {
+    const skipProducts = page * to - 18;
 
-  const totalProducts = await productSchema.find({
-    prodName: { $regex: `${query}`, $options: "i" },
-  });
-
-  const resProducts = await productSchema
-    .find({
+    const totalProducts = await productSchema.find({
       prodName: { $regex: `${query}`, $options: "i" },
-    })
-    .skip(skipProducts)
-    .limit(to);
+    });
 
-  moreProduct = Number(to) * Number(page) < totalProducts.length;
+    const resProducts = await productSchema
+      .find({
+        prodName: { $regex: `${query}`, $options: "i" },
+      })
+      .skip(skipProducts)
+      .limit(to);
 
-  const response = {
-    products: resProducts,
-    nextPage: Number(page) + 1,
-    moreProduct,
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    console.log("New Arrivals Total Products : ", totalProducts.length);
+    console.log("New Arrivals Limited Products : ", resProducts.length);
+    console.log("New Arrivals Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
   };
 
-  console.log("Total Products : ", totalProducts.length);
-  console.log("Limited Products : ", resProducts.length);
-  console.log("Sent Products : ", Number(page) * 9);
+  const priceHighToLow = async () => {
+    const skipProducts = page * to - 18;
 
-  if (response) {
-    res.json(response);
-  } else {
-    res.status(404);
+    const totalProducts = await productSchema.find({
+      prodName: { $regex: `${query}`, $options: "i" },
+    });
+
+    const resProducts = await productSchema
+      .find({
+        prodName: { $regex: `${query}`, $options: "i" },
+      })
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ prodPrice: -1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    // console.log("Total Products : ", totalProducts.length);
+    console.log("Limited Products Price Hight To Low : ", resProducts.length);
+    // console.log("Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  const priceLowToHigh = async () => {
+    const skipProducts = page * to - 18;
+
+    const totalProducts = await productSchema.find({
+      prodName: { $regex: `${query}`, $options: "i" },
+    });
+
+    const resProducts = await productSchema
+      .find({
+        prodName: { $regex: `${query}`, $options: "i" },
+      })
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ prodPrice: 1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    // console.log("Total Products : ", totalProducts.length);
+    console.log("Limited Products Price Hight To Low : ", resProducts.length);
+    // console.log("Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  const highRating = async () => {
+    const skipProducts = page * to - 18;
+
+    const totalProducts = await productSchema.find({
+      prodName: { $regex: `${query}`, $options: "i" },
+    });
+
+    const resProducts = await productSchema
+      .find({
+        prodName: { $regex: `${query}`, $options: "i" },
+      })
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ rating: -1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  switch (sortBy) {
+    case "newArrivals":
+      newArrivals();
+      break;
+
+    case "priceHighToLow":
+      priceHighToLow();
+      break;
+
+    case "priceLowToHigh":
+      priceLowToHigh();
+      break;
+
+    case "highRating":
+      highRating();
+      break;
+
+    default:
+      break;
   }
 });
 
@@ -102,35 +349,147 @@ router.get("/product/:id", async (req, res) => {
 
 router.get("/newarrivals", async (req, res) => {
   const page = req.query.page;
-  const to = 9;
+  const sortBy = req.query.sortBy;
+  const to = 18;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
 
-  // console.log("Req.Query : ", page);
+  if (filter.outOfStock) {
+    reqProdQuantity = 0;
+  } else {
+    reqProdQuantity = 1;
+  }
 
-  const skipProducts = page * to - 9;
+  const newArrivals = async () => {
+    const skipProducts = page * to - 18;
 
-  const totalProducts = await productSchema.find();
+    const totalProducts = await productSchema.find();
 
-  const resProducts = await productSchema.find().skip(skipProducts).limit(to);
+    const resProducts = await productSchema.find().skip(skipProducts).limit(to);
 
-  moreProduct = Number(to) * Number(page) < totalProducts.length;
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
 
-  const response = {
-    products: resProducts,
-    nextPage: Number(page) + 1,
-    moreProduct,
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    console.log("New Arrivals Total Products : ", totalProducts.length);
+    console.log("New Arrivals Limited Products : ", resProducts.length);
+    console.log("New Arrivals Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      setTimeout(() => {
+        res.json(response);
+      }, 4000);
+    } else {
+      res.status(404);
+    }
   };
 
-  console.log("Total Products : ", totalProducts.length);
-  console.log("Limited Products : ", resProducts.length);
-  console.log("Sent Products : ", Number(page) * 9);
+  const priceHighToLow = async () => {
+    const skipProducts = page * to - 18;
 
-  if (response) {
-    res.json(response);
-  } else {
-    res.status(404);
+    const totalProducts = await productSchema.find();
+
+    const resProducts = await productSchema
+      .find()
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ prodPrice: -1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  const priceLowToHigh = async () => {
+    const skipProducts = page * to - 18;
+
+    const totalProducts = await productSchema.find();
+
+    const resProducts = await productSchema
+      .find()
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ prodPrice: 1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    // console.log("Total Products : ", totalProducts.length);
+    console.log("Limited Products Price Hight To Low : ", resProducts.length);
+    // console.log("Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  const highRating = async () => {
+    const skipProducts = page * to - 18;
+
+    const totalProducts = await productSchema.find();
+
+    const resProducts = await productSchema
+      .find()
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ rating: -1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  switch (sortBy) {
+    case "newArrivals":
+      newArrivals();
+      break;
+
+    case "priceHighToLow":
+      priceHighToLow();
+      break;
+
+    case "priceLowToHigh":
+      priceLowToHigh();
+      break;
+
+    case "highRating":
+      highRating();
+      break;
+
+    default:
+      break;
   }
 });
 
@@ -143,41 +502,151 @@ router.get("/newarrivalscomp", async (req, res) => {
 
 router.get("/trendingproducts", async (req, res) => {
   const page = req.query.page;
-  const to = 9;
+  const sortBy = req.query.sortBy;
+  const to = 18;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
 
-  // console.log("Req.Query : ", page);
+  if (filter.outOfStock) {
+    reqProdQuantity = 0;
+  } else {
+    reqProdQuantity = 1;
+  }
 
-  const skipProducts = page * to - 9;
+  const newArrivals = async () => {
+    const skipProducts = page * to - 18;
 
-  const totalProducts = await productSchema.find();
+    const totalProducts = await productSchema.find();
 
-  const resProducts = await productSchema
-    .find()
-    .skip(skipProducts)
-    .limit(to)
-    .sort({ rating: -1 });
+    const resProducts = await productSchema.find().skip(skipProducts).limit(to);
 
-  moreProduct = Number(to) * Number(page) < totalProducts.length;
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
 
-  const response = {
-    products: resProducts,
-    nextPage: Number(page) + 1,
-    moreProduct,
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    console.log("New Arrivals Total Products : ", totalProducts.length);
+    console.log("New Arrivals Limited Products : ", resProducts.length);
+    console.log("New Arrivals Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
   };
 
-  // console.log("Total Products : ", totalProducts.length);
-  // console.log("Limited Products : ", resProducts.length);
-  // console.log("Sent Products : ", Number(page) * 9);
+  const priceHighToLow = async () => {
+    const skipProducts = page * to - 18;
 
-  if (response) {
-    res.json(response);
-  } else {
-    res.status(404);
+    const totalProducts = await productSchema.find();
+
+    const resProducts = await productSchema
+      .find()
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ prodPrice: -1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  const priceLowToHigh = async () => {
+    const skipProducts = page * to - 18;
+
+    const totalProducts = await productSchema.find();
+
+    const resProducts = await productSchema
+      .find()
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ prodPrice: 1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    // console.log("Total Products : ", totalProducts.length);
+    console.log("Limited Products Price Hight To Low : ", resProducts.length);
+    // console.log("Sent Products : ", Number(page) * 9);
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  const highRating = async () => {
+    const skipProducts = page * to - 18;
+
+    const totalProducts = await productSchema.find();
+
+    const resProducts = await productSchema
+      .find()
+      .skip(skipProducts)
+      .limit(to)
+      .sort({ rating: -1 });
+
+    moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    const response = {
+      products: resProducts,
+      nextPage: Number(page) + 1,
+      moreProduct,
+    };
+
+    if (response) {
+      res.json(response);
+    } else {
+      res.status(404);
+    }
+  };
+
+  switch (sortBy) {
+    case "newArrivals":
+      newArrivals();
+      break;
+
+    case "priceHighToLow":
+      priceHighToLow();
+      break;
+
+    case "priceLowToHigh":
+      priceLowToHigh();
+      break;
+
+    case "highRating":
+      highRating();
+      break;
+
+    default:
+      break;
   }
 });
+
+// router.get("/category", async (req, res) => {
+//   const categories = await productSchema.find();
+// });
 
 router.get("/trendingproductscomp", async (req, res) => {
   const product = await productSchema

@@ -395,21 +395,133 @@ const actionCodeSettings = {
     const userId = req.user.id;
     const checkoutData = req.body;
     const status = "pending";
+    let coupon;
 
-    console.log("Current Quantity : ", )
+    const productData = await productSchema
+      .findById(checkoutData.productId)
+      .select("prodQuantity");
 
-    const date = new Date();
-    const orderDate =
-      String(date.getDate()) +
-      "/" +
-      String(date.getMonth()) +
-      "/" +
-      String(date.getFullYear());
+    if (
+      productData.prodQuantity > 0 &&
+      productData.prodQuantity >= checkoutData.quantity
+    ) {
+      if (checkoutData.couponCode) {
+        coupon = await couponCodeSchema.findOne({
+          couponcode: checkoutData.couponCode,
+        });
+        if (coupon && coupon.quantity > 0) {
+          totalAmount = Math.ceil(
+            (checkoutData.productPrice *
+              checkoutData.quantity *
+              (100 - coupon.discount)) /
+              100
+          );
+          console.log("Total Amount : ", totalAmount);
+        } else {
+          res.status(401).json({ message: "Coupon is not Valid" });
+          return;
+        }
+      } else {
+        totalAmount = checkoutData.productPrice * checkoutData.quantity;
+      }
 
-    for (let index = 0; index < checkoutData.length; index++) {
-      let totalAmount;
-      let coupon;
+      const productId = checkoutData.productId;
+      const orderQuantity = checkoutData.quantity;
+      const deliveryAddress = checkoutData.deliveryAddress;
+      let addressFound = false;
 
+      const orderData = new orderSchema({
+        userId: checkoutData.userId,
+        productId,
+        prodImage: checkoutData.prodImage,
+        prodName: checkoutData.prodName,
+        quantity: orderQuantity,
+        status,
+        totalAmount,
+        paymentType: checkoutData.paymentOption,
+        deliveryAddress: deliveryAddress,
+        couponApplied: coupon?.couponcode,
+      });
+
+      const allAddress = await userSchema.findById(userId).select("address");
+
+      for (let index = 0; index < allAddress.address.length; index++) {
+        const element = allAddress.address[index];
+        if (
+          element.street === deliveryAddress.street &&
+          element.city === deliveryAddress.city &&
+          element.state === deliveryAddress.state &&
+          element.pincode === deliveryAddress.pincode
+        ) {
+          addressFound = true;
+        } else {
+          continue;
+        }
+      }
+
+      if (!addressFound) {
+        allAddress.address.push(deliveryAddress);
+        console.log("Adding Address...");
+
+        const updateAddress = await userSchema.findByIdAndUpdate(userId, {
+          address: allAddress.address,
+        });
+      }
+
+      const orderAdd = await orderData.save();
+
+      if (orderAdd) {
+        const productData = await productSchema
+          .findById(productId)
+          .select("prodQuantity");
+        const newQuantity = productData.prodQuantity - orderQuantity;
+
+        const updatedProdData = await productSchema.findByIdAndUpdate(
+          productId,
+          {
+            prodQuantity: newQuantity,
+          }
+        );
+
+        if (coupon) {
+          const reduceCouponQuantity = await couponCodeSchema
+            .findOne({
+              couponcode: coupon?.couponcode,
+            })
+            .select("quantity");
+          const updateQuantity = await couponCodeSchema.findByIdAndUpdate(
+            reduceCouponQuantity._id,
+            { quantity: reduceCouponQuantity.quantity - 1 }
+          );
+        }
+      }
+      console.log("Order Data : ", orderAdd);
+      res.status(200).json({ message: "Order Placed Successfully" });
+    } else {
+      res.status(400).json({ message: "Not Enough Quantity" });
+    }
+  });
+}
+
+router.post("/placecartorder", protectView, async (req, res) => {
+  const userId = req.user.id;
+  const checkoutData = req.body;
+  const status = "pending";
+  let outOfStock = [];
+  let successfull = [];
+
+  for (let index = 0; index < checkoutData.length; index++) {
+    let totalAmount;
+    let coupon;
+
+    const productData = await productSchema
+      .findById(checkoutData[index].productId)
+      .select("prodQuantity");
+
+    if (
+      productData.prodQuantity > 0 &&
+      productData.prodQuantity >= checkoutData[index].quantity
+    ) {
       if (checkoutData[index].couponCode) {
         coupon = await couponCodeSchema.findOne({
           couponcode: checkoutData[index].couponCode,
@@ -421,7 +533,6 @@ const actionCodeSettings = {
               (100 - coupon.discount)) /
               100
           );
-          console.log("Total Amount : ", totalAmount);
         } else {
           res.status(401).json({ message: "Coupon is not Valid" });
           return;
@@ -449,7 +560,6 @@ const actionCodeSettings = {
         couponApplied: coupon?.couponcode,
       });
 
-      // console.log("Order Schema : ", coupon.couponcode);
       const allAddress = await userSchema.findById(userId).select("address");
 
       for (let index = 0; index < allAddress.address.length; index++) {
@@ -475,10 +585,7 @@ const actionCodeSettings = {
         });
       }
 
-      // console.log("Address Found : ", allAddress);
-
       const orderAdd = await orderData.save();
-      // console.log("Order Add : ", orderAdd);
 
       if (orderAdd && checkoutData[index].buypage !== 1) {
         const response = await userSchema.findById(userId).select("cart");
@@ -490,13 +597,11 @@ const actionCodeSettings = {
         const removedItem = dataCart[indexOfProd];
 
         dataCart.splice(indexOfProd, 1);
-        // console.log("Attempt to delete the product in 'cart': ", removedItem);
-
         const removedFromCart = await userSchema.findByIdAndUpdate(userId, {
           cart: dataCart,
         });
 
-        // console.log("Removed Item : ", removedFromCart);
+        successfull.push(checkoutData[index].productId);
       }
 
       if (orderAdd) {
@@ -524,20 +629,30 @@ const actionCodeSettings = {
           );
         }
       }
+    } else {
+      outOfStock.push(productData.productId);
+      console.log("Out Of Stocks Products : ", outOfStock.length);
+      // res.status(400).json({ message: "Not Enough Quantity..." });
     }
-    res.status(200).json({ message: "Order Placed Successfully" });
+  }
+  res.status(200).json({
+    message: "Order Placed Successfully",
+    outOfStock: outOfStock.length,
+    successfull: successfull.length,
   });
-}
+});
 
 router.get("/applycoupon/:couponcode", async (req, res) => {
   const coupon = await couponCodeSchema.findOne({
     couponcode: req.params.couponcode,
   });
-  // console.log("Found Coupon : ", coupon);
+
+  console.log("Found Coupon : ", coupon);
 
   if (coupon?.quantity < 0 || coupon === null) {
     res.status(200).json({ message: "Coupon is not valid..." });
   } else {
+    // console.log("Send Coupon Data...")
     res.status(200).json({
       discount: coupon.discount,
       couponcode: coupon.couponcode,
@@ -569,7 +684,7 @@ router.post("/removeaddress", protectView, async (req, res) => {
   try {
     const reqAddress = req.body;
 
-    console.log("Remove Address/..;.")
+    console.log("Remove Address/..;.");
 
     const findAddress = await userSchema
       .find({
