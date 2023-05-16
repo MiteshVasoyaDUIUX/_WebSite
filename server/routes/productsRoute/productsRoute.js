@@ -8,7 +8,7 @@ router.get("/products/", async (req, res) => {
   const productCategory = req.query.category;
   const page = req.query.page;
   const sortBy = req.query.sortBy;
-  const to = 18;
+  const to = 30;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
@@ -20,7 +20,7 @@ router.get("/products/", async (req, res) => {
   }
 
   const newArrivals = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
       prodCategory: { $regex: `${productCategory}`, $options: "i" },
@@ -41,9 +41,9 @@ router.get("/products/", async (req, res) => {
       moreProduct,
     };
 
-    console.log("New Arrivals Total Products : ", totalProducts.length);
-    console.log("New Arrivals Limited Products : ", resProducts.length);
-    console.log("New Arrivals Sent Products : ", Number(page) * 9);
+    // console.log("New Arrivals Total Products : ", totalProducts.length);
+    // console.log("New Arrivals Limited Products : ", resProducts.length);
+    // console.log("New Arrivals Sent Products : ", Number(page) * 30);
 
     if (response) {
       res.json(response);
@@ -53,7 +53,7 @@ router.get("/products/", async (req, res) => {
   };
 
   const priceHighToLow = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
       prodCategory: { $regex: `${productCategory}`, $options: "i" },
@@ -87,7 +87,7 @@ router.get("/products/", async (req, res) => {
   };
 
   const priceLowToHigh = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
       prodCategory: { $regex: `${productCategory}`, $options: "i" },
@@ -121,7 +121,7 @@ router.get("/products/", async (req, res) => {
   };
 
   const highRating = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
       prodCategory: { $regex: `${productCategory}`, $options: "i" },
@@ -176,7 +176,7 @@ router.get("/search", async (req, res) => {
   const page = req.query.page;
   const query = req.query.query;
   const sortBy = req.query.sortBy;
-  const to = 18;
+  const to = 30;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
@@ -188,7 +188,7 @@ router.get("/search", async (req, res) => {
   }
 
   const newArrivals = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
       prodName: { $regex: `${query}`, $options: "i" },
@@ -221,7 +221,7 @@ router.get("/search", async (req, res) => {
   };
 
   const priceHighToLow = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
       prodName: { $regex: `${query}`, $options: "i" },
@@ -255,7 +255,7 @@ router.get("/search", async (req, res) => {
   };
 
   const priceLowToHigh = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
       prodName: { $regex: `${query}`, $options: "i" },
@@ -289,7 +289,7 @@ router.get("/search", async (req, res) => {
   };
 
   const highRating = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
       prodName: { $regex: `${query}`, $options: "i" },
@@ -350,7 +350,7 @@ router.get("/product/:id", async (req, res) => {
 router.get("/newarrivals", async (req, res) => {
   const page = req.query.page;
   const sortBy = req.query.sortBy;
-  const to = 18;
+  const to = 30;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
@@ -362,7 +362,7 @@ router.get("/newarrivals", async (req, res) => {
   }
 
   const newArrivals = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find();
 
@@ -381,16 +381,14 @@ router.get("/newarrivals", async (req, res) => {
     console.log("New Arrivals Sent Products : ", Number(page) * 9);
 
     if (response) {
-      setTimeout(() => {
-        res.json(response);
-      }, 4000);
+      res.json(response);
     } else {
       res.status(404);
     }
   };
 
   const priceHighToLow = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find();
 
@@ -416,7 +414,7 @@ router.get("/newarrivals", async (req, res) => {
   };
 
   const priceLowToHigh = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find();
 
@@ -446,7 +444,7 @@ router.get("/newarrivals", async (req, res) => {
   };
 
   const highRating = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find();
 
@@ -503,7 +501,7 @@ router.get("/newarrivalscomp", async (req, res) => {
 router.get("/trendingproducts", async (req, res) => {
   const page = req.query.page;
   const sortBy = req.query.sortBy;
-  const to = 18;
+  const to = 30;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
@@ -515,7 +513,7 @@ router.get("/trendingproducts", async (req, res) => {
   }
 
   const newArrivals = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find();
 
@@ -541,7 +539,7 @@ router.get("/trendingproducts", async (req, res) => {
   };
 
   const priceHighToLow = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find();
 
@@ -567,7 +565,7 @@ router.get("/trendingproducts", async (req, res) => {
   };
 
   const priceLowToHigh = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find();
 
@@ -597,7 +595,7 @@ router.get("/trendingproducts", async (req, res) => {
   };
 
   const highRating = async () => {
-    const skipProducts = page * to - 18;
+    const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find();
 
