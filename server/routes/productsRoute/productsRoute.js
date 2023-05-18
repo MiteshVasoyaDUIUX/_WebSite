@@ -642,10 +642,6 @@ router.get("/trendingproducts", async (req, res) => {
   }
 });
 
-// router.get("/category", async (req, res) => {
-//   const categories = await productSchema.find();
-// });
-
 router.get("/trendingproductscomp", async (req, res) => {
   const product = await productSchema
     .find({ prodQuantity: { $gte: 1 } })

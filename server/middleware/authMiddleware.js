@@ -50,6 +50,7 @@ const protectView = asyncHandler(async (req, res, next) => {
       // console.log("In Auth Path : ", req.user);
       next();
     } catch (error) {
+      // console.log("Not Authorized...")
       res.json({
         message: "Not Authorized Person",
         error: error,
@@ -179,7 +180,7 @@ const allUsers = asyncHandler(async (req, res, next) => {
 
 const protectChat = asyncHandler(async (req, res, next) => {
   let token;
-  
+
   console.log("request headers : ", req.headers.authorization);
 
   if (

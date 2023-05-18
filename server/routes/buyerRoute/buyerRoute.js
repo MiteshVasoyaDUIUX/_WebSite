@@ -394,7 +394,7 @@ const actionCodeSettings = {
   router.post("/placeorder", protectView, async (req, res) => {
     const userId = req.user.id;
     const checkoutData = req.body;
-    const status = "pending";
+    const status = "Pending";
     let coupon;
 
     const productData = await productSchema
@@ -506,9 +506,11 @@ const actionCodeSettings = {
 router.post("/placecartorder", protectView, async (req, res) => {
   const userId = req.user.id;
   const checkoutData = req.body;
-  const status = "pending";
+  const status = "Pending";
   let outOfStock = [];
   let successfull = [];
+
+  console.log("Place Cart Order...");
 
   for (let index = 0; index < checkoutData.length; index++) {
     let totalAmount;
@@ -616,23 +618,25 @@ router.post("/placecartorder", protectView, async (req, res) => {
             prodQuantity: newQuantity,
           }
         );
-
-        if (coupon) {
-          const reduceCouponQuantity = await couponCodeSchema
-            .findOne({
-              couponcode: coupon?.couponcode,
-            })
-            .select("quantity");
-          const updateQuantity = await couponCodeSchema.findByIdAndUpdate(
-            reduceCouponQuantity._id,
-            { quantity: reduceCouponQuantity.quantity - 1 }
-          );
-        }
       }
     } else {
       outOfStock.push(productData.productId);
       console.log("Out Of Stocks Products : ", outOfStock.length);
       // res.status(400).json({ message: "Not Enough Quantity..." });
+    }
+
+    if (index === checkoutData.length - 1) {
+      if (coupon) {
+        const reduceCouponQuantity = await couponCodeSchema
+          .findOne({
+            couponcode: coupon?.couponcode,
+          })
+          .select("quantity");
+        const updateQuantity = await couponCodeSchema.findByIdAndUpdate(
+          reduceCouponQuantity._id,
+          { quantity: reduceCouponQuantity.quantity - 1 }
+        );
+      }
     }
   }
   res.status(200).json({
@@ -647,16 +651,16 @@ router.get("/applycoupon/:couponcode", async (req, res) => {
     couponcode: req.params.couponcode,
   });
 
-  console.log("Found Coupon : ", coupon);
-
-  if (coupon?.quantity < 0 || coupon === null) {
-    res.status(200).json({ message: "Coupon is not valid..." });
+  if (coupon.quantity <= 0 || coupon === null) {
+    console.log("Coupon is not Valid...");
+    res.status(401).json({ message: "Coupon is not valid...", isValid: false });
   } else {
-    // console.log("Send Coupon Data...")
+    console.log("Send Coupon Data...", typeof coupon.quantity);
     res.status(200).json({
       discount: coupon.discount,
       couponcode: coupon.couponcode,
       message: "Coupon Applied Successfully",
+      isValid: true,
     });
   }
 });

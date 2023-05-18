@@ -134,32 +134,35 @@ router.post(
 
 //Get list of all Users (including Vendors and Buyers)...
 router.get("/allusers", allUsers, async (req, res) => {
-  const usersList = await userSchema.find();
+  //Avoid Admin...
+  const usersList = await userSchema.find({
+    _id: { $not: { $regex: "aUS1ZeUBOHeZwYdiKlFV4wIPpvh2" } },
+  });
 
-  const allUsers = await verify.allUsersFromFirebase();
+  console.log("Req.User : ", req.user);
 
-  // console.log("All Users : ", allUsers.users[0].uid);
-  // console.log("All Users FROM DB : ", usersList);
+  // const allUsers = await verify.allUsersFromFirebase();
 
-  for (let iindex = 0; iindex < usersList.length; iindex++) {
-    const dbUserData = usersList[iindex];
+  // for (let iindex = 0; iindex < usersList.length; iindex++) {
+  //   const dbUserData = usersList[iindex];
 
-    if (!dbUserData.emailVerified) {
-      // console.log("User not verified : ", dbUserData)
+  //   if (!dbUserData.emailVerified) {
+  //     // console.log("User not verified : ", dbUserData)
 
-      for (let jindex = 0; jindex < allUsers.users.length; jindex++) {
-        const fbUserData = allUsers.users[jindex];
+  //     for (let jindex = 0; jindex < allUsers.users.length; jindex++) {
+  //       const fbUserData = allUsers.users[jindex];
 
-        if (dbUserData._id === fbUserData.uid) {
-          // console.log("Not Verified", dbUserData._id, dbUserData.emailVerified);
-          const emailVerifiedUpdate = await userSchema.findByIdAndUpdate(
-            dbUserData._id,
-            { emailVerified: fbUserData.emailVerified }
-          );
-        }
-      }
-    }
-  }
+  //       if (dbUserData._id === fbUserData.uid) {
+  //         // console.log("Not Verified", dbUserData._id, dbUserData.emailVerified);
+  //         const emailVerifiedUpdate = await userSchema.findByIdAndUpdate(
+  //           dbUserData._id,
+  //           { emailVerified: fbUserData.emailVerified }
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
+
   if (usersList.length == 0) {
     console.log("Users Not found");
   } else {

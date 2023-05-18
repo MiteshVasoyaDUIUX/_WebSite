@@ -12,6 +12,7 @@ const adminId = "aUS1ZeUBOHeZwYdiKlFV4wIPpvh2";
 
 const getUserName = async (userId) => {
   const clientData = await userSchema.findById(userId);
+  console.log("Chat Data : ", clientData);
   return clientData.name;
 };
 
@@ -111,6 +112,8 @@ router.get("/fetch/conversations", protectChat, async (req, res) => {
     const conversationId = conversationIds[index];
 
     const userId = conversationId.users[1];
+
+    console.log("USER ID : ", userId)
 
     const userName = await getUserName(userId);
 
