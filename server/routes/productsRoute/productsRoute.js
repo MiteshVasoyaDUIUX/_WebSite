@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const colors = require("colors");
 const productSchema = require("../../schema/productSchema");
 
 //Get all orders placed by the user...
@@ -172,6 +172,41 @@ router.get("/products/", async (req, res) => {
   }
 });
 
+//Real-time Search Query Response...
+router.get("/query/", async (req, res) => {
+  const query = req.query.query;
+  const queryWords = query.split(" ");
+
+  console.log(`Query Words  :  ${queryWords}`.rainbow.white);
+
+  const regexArray = queryWords.map((word) => new RegExp(word, "i"));
+
+  const orConditions = regexArray.map((regex) => ({ prodName: regex }));
+
+  const orQuery = { $and: orConditions };
+
+  const fieldConditions = queryWords.map((word) => ({
+    $or: [
+      { productName: { $regex: word, $options: "i" } },
+      { productDescription: { $regex: word, $options: "i" } },
+    ],
+  }));
+
+  // console.log("REGEX : ", regexArray);
+  // console.log("OR REGEX : ", orConditions);
+  // console.log("OR QUERY : ", orQuery);
+
+  const queryResults = await productSchema
+    .find(orQuery)
+    .select("prodName")
+    .limit(10);
+  // console.log(`Query Result : `.rainbow.white, { response: queryResults });
+
+  setTimeout(() => {
+    res.json({ response: queryResults });
+  }, 1000);
+});
+
 router.get("/search", async (req, res) => {
   const page = req.query.page;
   const query = req.query.query;
@@ -208,10 +243,6 @@ router.get("/search", async (req, res) => {
       nextPage: Number(page) + 1,
       moreProduct,
     };
-
-    console.log("New Arrivals Total Products : ", totalProducts.length);
-    console.log("New Arrivals Limited Products : ", resProducts.length);
-    console.log("New Arrivals Sent Products : ", Number(page) * 9);
 
     if (response) {
       res.json(response);
