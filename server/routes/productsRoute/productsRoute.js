@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const colors = require("colors");
 const productSchema = require("../../schema/productSchema");
+const orderSchema = require("../../schema/orderSchema");
 
 //Get all orders placed by the user...
 router.get("/products/", async (req, res) => {
@@ -177,34 +178,78 @@ router.get("/query/", async (req, res) => {
   const query = req.query.query;
   const queryWords = query.split(" ");
 
-  console.log(`Query Words  :  ${queryWords}`.rainbow.white);
+  // console.log(`Query Words  :  ${queryWords}`.rainbow.white);
 
   const regexArray = queryWords.map((word) => new RegExp(word, "i"));
 
-  const orConditions = regexArray.map((regex) => ({ prodName: regex }));
+  const conditionsProdName = regexArray.map((regex) => ({ prodName: regex }));
+  const conditionsProdDesc = regexArray.map((regex) => ({ prodDesc: regex }));
+  const conditionsProdCategory = regexArray.map((regex) => ({
+    prodCategory: regex,
+  }));
 
-  const orQuery = { $and: orConditions };
+  const andQueryProdName = { $and: conditionsProdName };
+  const andQueryProdDesc = { $and: conditionsProdDesc };
+  const andQueryProdCategory = { $and: conditionsProdCategory };
+
+  const orQueryProdName = { $or: conditionsProdName };
+  const orQueryProdDesc = { $or: conditionsProdDesc };
+  const orQueryProdCategory = { $or: conditionsProdCategory };
 
   const fieldConditions = queryWords.map((word) => ({
     $or: [
-      { productName: { $regex: word, $options: "i" } },
-      { productDescription: { $regex: word, $options: "i" } },
+      { prodName: { $regex: word, $options: "i" } },
+      { prodDesc: { $regex: word, $options: "i" } },
+      { prodCategory: { $regex: word, $options: "i" } },
     ],
   }));
 
   // console.log("REGEX : ", regexArray);
-  // console.log("OR REGEX : ", orConditions);
-  // console.log("OR QUERY : ", orQuery);
+  // console.log("OR REGEX : ", conditionsProdName);
+  // console.log("OR QUERY : ", andQueryProdName);
 
   const queryResults = await productSchema
-    .find(orQuery)
+    .find(andQueryProdName)
     .select("prodName")
     .limit(10);
-  // console.log(`Query Result : `.rainbow.white, { response: queryResults });
+
+  if (queryResults.length <= 10) {
+    const queryResults2 = await productSchema
+      .find(andQueryProdDesc)
+      .select("prodName")
+      .limit(10);
+
+    queryResults2.map((result) => {
+      if (queryResults.length <= 10) queryResults.push(result);
+    });
+  }
+
+  if (queryResults.length <= 10) {
+    const queryResults3 = await productSchema
+      .find(andQueryProdCategory)
+      .select("prodName")
+      .limit(10);
+
+    queryResults3.map((result) => {
+      if (queryResults.length <= 10) queryResults.push(result);
+    });
+  }
+
+  if (queryResults.length <= 10) {
+    const queryResults4 = await productSchema
+      .find({ $or: fieldConditions })
+      .select("prodName")
+      .limit(10);
+
+    queryResults4.map((result) => {
+      if (queryResults.length <= 10) queryResults.push(result);
+    });
+  }
+  // console.log("ProdName Length : ", queryResults);
 
   setTimeout(() => {
     res.json({ response: queryResults });
-  }, 1000);
+  }, 0);
 });
 
 router.get("/search", async (req, res) => {
@@ -674,10 +719,67 @@ router.get("/trendingproducts", async (req, res) => {
 });
 
 router.get("/trendingproductscomp", async (req, res) => {
-  const product = await productSchema
-    .find({ prodQuantity: { $gte: 1 } })
-    .limit(50);
+  const product = await productSchema.aggregate([{ $sample: { size: 4 } }]);
+
+  // const product = await productSchema
+  //   .find({ prodQuantity: { $gte: 1 } })
+  //   .limit(50);
+
   res.json(product);
+});
+
+router.get("/topsellingcomp", async (req, res) => {
+  const allOrders = await orderSchema.aggregate([
+    {
+      $group: {
+        _id: "$productId", // Replace "commonField" with the actual field name
+        documents: { $push: "$$ROOT" }, // Store the matching documents in an array
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  allOrders.sort((a, b) => {
+    return b.count - a.count;
+  });
+
+  let responseData = [];
+
+  for (let index = 0; index < 4; index++) {
+    const product = allOrders[index];
+    const prod = await productSchema.findById(product._id);
+
+    const {
+      _id,
+      prodName,
+      prodDesc,
+      prodQuantity,
+      prodCategory,
+      prodPrice,
+      prodMRP,
+      discount,
+      rating,
+      prodImage,
+    } = prod;
+
+    const prodData = {
+      _id,
+      prodName,
+      prodDesc,
+      prodQuantity,
+      prodCategory,
+      prodPrice,
+      prodMRP,
+      discount,
+      rating,
+      prodImage,
+      ordersCount: product.count,
+    };
+
+    responseData.push(prodData);
+  }
+
+  res.json(responseData);
 });
 
 module.exports = router;

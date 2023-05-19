@@ -9,6 +9,9 @@ const {
 } = require("../../middleware/authMiddleware");
 const productSchema = require("../../schema/productSchema");
 const userSchema = require("../../schema/userSchema");
+const orderSchema = require("../../schema/orderSchema");
+const conversationIdSchema = require("../../schema/conversationIdSchema");
+const chatSchema = require("../../schema/chatSchema");
 
 const {
   getStorage,
@@ -21,10 +24,6 @@ const {
 } = require("firebase/storage");
 
 const verify = require("../../firebase/config");
-
-const orderSchema = require("../../schema/orderSchema");
-const conversationIdSchema = require("../../schema/conversationIdSchema");
-const chatSchema = require("../../schema/chatSchema");
 
 const storage = getStorage();
 
