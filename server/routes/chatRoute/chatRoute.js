@@ -37,7 +37,7 @@ router.get("/client/fetch/:from", protectChat, async (req, res) => {
     .limit(to)
     .sort({ _id: -1 });
 
-  console.log("Chat Data : ", reversedMsg);
+  console.log("conversationData : ", conversationData);
 
   if (Number(to) + Number(from) - 1 < totalMsg.length) {
     moreMsg = true;
@@ -53,7 +53,7 @@ router.get("/client/fetch/:from", protectChat, async (req, res) => {
     nextMsgFrom: Number(from) + Number(to),
   };
 
-  // console.log("Conversation Data : ", newMessageObj.nextMsgFrom);
+  console.log("Conversation Data : ", newMessageObj);
 
   res.json(newMessageObj);
 });
@@ -143,7 +143,7 @@ router.post("/save/chat", protectChat, async (req, res) => {
 
   const message = await newChat.save();
 
-  console.log("Chat Data : ", message);
+  console.log("Chat Data : ", data);
 });
 
 module.exports = router;

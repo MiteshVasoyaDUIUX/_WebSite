@@ -1015,9 +1015,9 @@ router.get("/topsellingcomp", async (req, res) => {
   let responseData = [];
 
   if (allOrders.length > 0) {
-    for (let index = 0; index < 4; index++) {
+    for (let index = 0; index < 4 && index < allOrders.length; index++) {
       const product = allOrders[index];
-      const prod = await productSchema.findById(product.id);
+      const prod = await productSchema.findById(product._id);
 
       const {
         _id,

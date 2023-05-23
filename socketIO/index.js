@@ -1,4 +1,5 @@
 // const socketIdSchema = require("../../");
+const colors = require("colors");
 
 const { find } = require("../server/schema/chatSchema");
 
@@ -32,7 +33,7 @@ const removeActiveClient = (socketId) => {
 const addActiveAdmin = (socketIdData) => {
   activeAdmin[socketIdData.userId] = socketIdData.socketId;
   reverseActiveAdmin[socketIdData.socketId] = socketIdData.userId;
-  console.log("addActiveAdmin : ", activeAdmin);
+  console.log(`addActiveAdmin : ${activeAdmin}`.bgCyan);
 };
 
 const removeActiveAdmin = (socketId) => {
@@ -40,7 +41,7 @@ const removeActiveAdmin = (socketId) => {
   delete reverseActiveAdmin[socketId];
   delete activeAdmin[userId];
   activeAdmin[userId] = null;
-  console.log("New Active Admin Array : ", activeAdmin);
+  console.log(`New Active Admin Array :  ${activeAdmin}`.bgBlue);
 };
 
 const findSocketId = (receiverId) => {
@@ -66,10 +67,10 @@ io.on("connection", (socket) => {
     const receiverSocketId = await findSocketId(data.receiverId);
 
     if (!receiverSocketId) {
-      socket.emit('save-chat', data)
+      socket.emit("save-chat", data);
     } else {
-      console.log("Receiver is online, Socket Id : ", receiverSocketId)
-      socket.emit('save-chat', data)
+      console.log("Receiver is online, Socket Id : ", receiverSocketId);
+      socket.emit("save-chat", data);
       io.to(receiverSocketId).emit("privatemessage", data);
     }
   });

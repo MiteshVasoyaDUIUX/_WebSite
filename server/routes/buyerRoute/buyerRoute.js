@@ -618,6 +618,33 @@ router.post("/placecartorder", protectView, async (req, res) => {
             prodQuantity: newQuantity,
           }
         );
+
+        let conversationId = "";
+
+        conversationId = await conversationIdSchema
+          .findOne({
+            users: { $all: [adminId, userId] },
+          })
+          .select("_id");
+
+        if (conversationId) {
+          console.log("Conversation Schema : ", String(conversationId._id));
+        } else {
+          let newUsers = [adminId, userId];
+
+          const newConversationData = new conversationIdSchema({
+            users: newUsers,
+          });
+
+          const conversationEntry = await newConversationData.save();
+
+          conversationId = await conversationIdSchema
+            .findOne({
+              users: { $all: [adminId, userId] },
+            })
+            .select("_id");
+          // console.log("Conversaiton Schema : ", conversationId._id);
+        }
       }
     } else {
       outOfStock.push(productData.productId);
