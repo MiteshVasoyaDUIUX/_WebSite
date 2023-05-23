@@ -3,14 +3,27 @@ const router = express.Router();
 const colors = require("colors");
 const productSchema = require("../../schema/productSchema");
 const orderSchema = require("../../schema/orderSchema");
+const {
+  ratingFilter,
+  priceFilter,
+  PodFilter,
+  discountFilter,
+} = require("../../../FilterFunctions/filterFunctions");
 
 //Get all orders placed by the user...
-router.get("/products/", async (req, res) => {
+router.post("/products/", async (req, res) => {
   const productCategory = req.query.category;
   const page = req.query.page;
   const sortBy = req.query.sortBy;
   const to = 30;
   const filter = req.body;
+
+  let price = filter.price;
+  let rating = filter.rating !== null ? filter.rating : 0;
+  let discount = filter.discount !== undefined ? Number(filter.discount) : 0;
+  let POD = filter.POD === true ? "COD" : "";
+  let includeOutOfStock = filter.includeOutOfStock === true ? 0 : 1;
+
   let moreProduct;
   let reqProdQuantity;
 
@@ -24,12 +37,26 @@ router.get("/products/", async (req, res) => {
     const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
-      prodCategory: { $regex: `${productCategory}`, $options: "i" },
+      $and: [
+        { prodCategory: { $regex: `${productCategory}`, $options: "i" } },
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
     });
 
     const resProducts = await productSchema
       .find({
-        prodCategory: { $regex: `${productCategory}`, $options: "i" },
+        $and: [
+          { prodCategory: { $regex: `${productCategory}`, $options: "i" } },
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
       })
       .skip(skipProducts)
       .limit(to);
@@ -57,12 +84,26 @@ router.get("/products/", async (req, res) => {
     const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
-      prodCategory: { $regex: `${productCategory}`, $options: "i" },
+      $and: [
+        { prodCategory: { $regex: `${productCategory}`, $options: "i" } },
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
     });
 
     const resProducts = await productSchema
       .find({
-        prodCategory: { $regex: `${productCategory}`, $options: "i" },
+        $and: [
+          { prodCategory: { $regex: `${productCategory}`, $options: "i" } },
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
       })
       .skip(skipProducts)
       .limit(to)
@@ -77,7 +118,7 @@ router.get("/products/", async (req, res) => {
     };
 
     // console.log("Total Products : ", totalProducts.length);
-    console.log("Limited Products Price Hight To Low : ", resProducts.length);
+    // console.log("Limited Products Price Hight To Low : ", resProducts.length);
     // console.log("Sent Products : ", Number(page) * 9);
 
     if (response) {
@@ -91,12 +132,26 @@ router.get("/products/", async (req, res) => {
     const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
-      prodCategory: { $regex: `${productCategory}`, $options: "i" },
+      $and: [
+        { prodCategory: { $regex: `${productCategory}`, $options: "i" } },
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
     });
 
     const resProducts = await productSchema
       .find({
-        prodCategory: { $regex: `${productCategory}`, $options: "i" },
+        $and: [
+          { prodCategory: { $regex: `${productCategory}`, $options: "i" } },
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
       })
       .skip(skipProducts)
       .limit(to)
@@ -111,7 +166,7 @@ router.get("/products/", async (req, res) => {
     };
 
     // console.log("Total Products : ", totalProducts.length);
-    console.log("Limited Products Price Hight To Low : ", resProducts.length);
+    // console.log("Limited Products Price Hight To Low : ", resProducts.length);
     // console.log("Sent Products : ", Number(page) * 9);
 
     if (response) {
@@ -125,12 +180,26 @@ router.get("/products/", async (req, res) => {
     const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
-      prodCategory: { $regex: `${productCategory}`, $options: "i" },
+      $and: [
+        { prodCategory: { $regex: `${productCategory}`, $options: "i" } },
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
     });
 
     const resProducts = await productSchema
       .find({
-        prodCategory: { $regex: `${productCategory}`, $options: "i" },
+        $and: [
+          { prodCategory: { $regex: `${productCategory}`, $options: "i" } },
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
       })
       .skip(skipProducts)
       .limit(to)
@@ -252,7 +321,7 @@ router.get("/query/", async (req, res) => {
   }, 0);
 });
 
-router.get("/search", async (req, res) => {
+router.post("/search", async (req, res) => {
   const page = req.query.page;
   const query = req.query.query;
   const sortBy = req.query.sortBy;
@@ -260,6 +329,12 @@ router.get("/search", async (req, res) => {
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
+
+  let price = filter.price;
+  let rating = filter.rating !== null ? filter.rating : 0;
+  let discount = filter.discount !== undefined ? Number(filter.discount) : 0;
+  let POD = filter.POD === true ? "COD" : "";
+  let includeOutOfStock = filter.includeOutOfStock === true ? 0 : 1;
 
   if (filter.outOfStock) {
     reqProdQuantity = 0;
@@ -271,17 +346,33 @@ router.get("/search", async (req, res) => {
     const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
-      prodName: { $regex: `${query}`, $options: "i" },
+      $and: [
+        { prodName: { $regex: `${query}`, $options: "i" } },
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
     });
 
     const resProducts = await productSchema
       .find({
-        prodName: { $regex: `${query}`, $options: "i" },
+        $and: [
+          { prodName: { $regex: `${query}`, $options: "i" } },
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
       })
       .skip(skipProducts)
       .limit(to);
 
     moreProduct = Number(to) * Number(page) < totalProducts.length;
+
+    console.log("RESPONSE :", resProducts.length);
 
     const response = {
       products: resProducts,
@@ -300,12 +391,26 @@ router.get("/search", async (req, res) => {
     const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
-      prodName: { $regex: `${query}`, $options: "i" },
+      $and: [
+        { prodName: { $regex: `${query}`, $options: "i" } },
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
     });
 
     const resProducts = await productSchema
       .find({
-        prodName: { $regex: `${query}`, $options: "i" },
+        $and: [
+          { prodName: { $regex: `${query}`, $options: "i" } },
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
       })
       .skip(skipProducts)
       .limit(to)
@@ -334,12 +439,26 @@ router.get("/search", async (req, res) => {
     const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
-      prodName: { $regex: `${query}`, $options: "i" },
+      $and: [
+        { prodName: { $regex: `${query}`, $options: "i" } },
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
     });
 
     const resProducts = await productSchema
       .find({
-        prodName: { $regex: `${query}`, $options: "i" },
+        $and: [
+          { prodName: { $regex: `${query}`, $options: "i" } },
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
       })
       .skip(skipProducts)
       .limit(to)
@@ -353,10 +472,6 @@ router.get("/search", async (req, res) => {
       moreProduct,
     };
 
-    // console.log("Total Products : ", totalProducts.length);
-    console.log("Limited Products Price Hight To Low : ", resProducts.length);
-    // console.log("Sent Products : ", Number(page) * 9);
-
     if (response) {
       res.json(response);
     } else {
@@ -368,12 +483,26 @@ router.get("/search", async (req, res) => {
     const skipProducts = page * to - 30;
 
     const totalProducts = await productSchema.find({
-      prodName: { $regex: `${query}`, $options: "i" },
+      $and: [
+        { prodName: { $regex: `${query}`, $options: "i" } },
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
     });
 
     const resProducts = await productSchema
       .find({
-        prodName: { $regex: `${query}`, $options: "i" },
+        $and: [
+          { prodName: { $regex: `${query}`, $options: "i" } },
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
       })
       .skip(skipProducts)
       .limit(to)
@@ -423,13 +552,19 @@ router.get("/product/:id", async (req, res) => {
   res.json(product);
 });
 
-router.get("/newarrivals", async (req, res) => {
+router.post("/newarrivals", async (req, res) => {
   const page = req.query.page;
   const sortBy = req.query.sortBy;
   const to = 30;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
+
+  let price = filter.price;
+  let rating = filter.rating !== null ? filter.rating : 0;
+  let discount = filter.discount !== undefined ? Number(filter.discount) : 0;
+  let POD = filter.POD === true ? "COD" : "";
+  let includeOutOfStock = filter.includeOutOfStock === true ? 0 : 1;
 
   if (filter.outOfStock) {
     reqProdQuantity = 0;
@@ -440,9 +575,28 @@ router.get("/newarrivals", async (req, res) => {
   const newArrivals = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find();
+    const totalProducts = await productSchema.find({
+      $and: [
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
+    });
 
-    const resProducts = await productSchema.find().skip(skipProducts).limit(to);
+    const resProducts = await productSchema
+      .find({
+        $and: [
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
+      })
+      .skip(skipProducts)
+      .limit(to);
 
     moreProduct = Number(to) * Number(page) < totalProducts.length;
 
@@ -451,10 +605,6 @@ router.get("/newarrivals", async (req, res) => {
       nextPage: Number(page) + 1,
       moreProduct,
     };
-
-    console.log("New Arrivals Total Products : ", totalProducts.length);
-    console.log("New Arrivals Limited Products : ", resProducts.length);
-    console.log("New Arrivals Sent Products : ", Number(page) * 9);
 
     if (response) {
       res.json(response);
@@ -466,10 +616,26 @@ router.get("/newarrivals", async (req, res) => {
   const priceHighToLow = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find();
+    const totalProducts = await productSchema.find({
+      $and: [
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
+    });
 
     const resProducts = await productSchema
-      .find()
+      .find({
+        $and: [
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
+      })
       .skip(skipProducts)
       .limit(to)
       .sort({ prodPrice: -1 });
@@ -492,10 +658,26 @@ router.get("/newarrivals", async (req, res) => {
   const priceLowToHigh = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find();
+    const totalProducts = await productSchema.find({
+      $and: [
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
+    });
 
     const resProducts = await productSchema
-      .find()
+      .find({
+        $and: [
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
+      })
       .skip(skipProducts)
       .limit(to)
       .sort({ prodPrice: 1 });
@@ -522,10 +704,26 @@ router.get("/newarrivals", async (req, res) => {
   const highRating = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find();
+    const totalProducts = await productSchema.find({
+      $and: [
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
+    });
 
     const resProducts = await productSchema
-      .find()
+      .find({
+        $and: [
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
+      })
       .skip(skipProducts)
       .limit(to)
       .sort({ rating: -1 });
@@ -574,13 +772,19 @@ router.get("/newarrivalscomp", async (req, res) => {
   res.json(product);
 });
 
-router.get("/trendingproducts", async (req, res) => {
+router.post("/trendingproducts", async (req, res) => {
   const page = req.query.page;
   const sortBy = req.query.sortBy;
   const to = 30;
   const filter = req.body;
   let moreProduct;
   let reqProdQuantity;
+
+  let price = filter.price;
+  let rating = filter.rating !== null ? filter.rating : 0;
+  let discount = filter.discount !== undefined ? Number(filter.discount) : 0;
+  let POD = filter.POD === true ? "COD" : "";
+  let includeOutOfStock = filter.includeOutOfStock === true ? 0 : 1;
 
   if (filter.outOfStock) {
     reqProdQuantity = 0;
@@ -591,9 +795,30 @@ router.get("/trendingproducts", async (req, res) => {
   const newArrivals = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find();
+    console.log("Price : ", filter.price);
 
-    const resProducts = await productSchema.find().skip(skipProducts).limit(to);
+    const totalProducts = await productSchema.find({
+      $and: [
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
+    });
+
+    const resProducts = await productSchema
+      .find({
+        $and: [
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
+      })
+      .skip(skipProducts)
+      .limit(to);
 
     moreProduct = Number(to) * Number(page) < totalProducts.length;
 
@@ -617,10 +842,26 @@ router.get("/trendingproducts", async (req, res) => {
   const priceHighToLow = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find();
+    const totalProducts = await productSchema.find({
+      $and: [
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
+    });
 
     const resProducts = await productSchema
-      .find()
+      .find({
+        $and: [
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
+      })
       .skip(skipProducts)
       .limit(to)
       .sort({ prodPrice: -1 });
@@ -643,10 +884,26 @@ router.get("/trendingproducts", async (req, res) => {
   const priceLowToHigh = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find();
+    const totalProducts = await productSchema.find({
+      $and: [
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
+    });
 
     const resProducts = await productSchema
-      .find()
+      .find({
+        $and: [
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
+      })
       .skip(skipProducts)
       .limit(to)
       .sort({ prodPrice: 1 });
@@ -673,10 +930,26 @@ router.get("/trendingproducts", async (req, res) => {
   const highRating = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find();
+    const totalProducts = await productSchema.find({
+      $and: [
+        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+        { rating: { $gte: `${rating}` } },
+        { discount: { $gte: `${discount}` } },
+        { paymentType: { $regex: `${POD}`, $options: "i" } },
+        { prodQuantity: { $gte: `${includeOutOfStock}` } },
+      ],
+    });
 
     const resProducts = await productSchema
-      .find()
+      .find({
+        $and: [
+          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+          { rating: { $gte: `${rating}` } },
+          { discount: { $gte: `${discount}` } },
+          { paymentType: { $regex: `${POD}`, $options: "i" } },
+          { prodQuantity: { $gte: `${includeOutOfStock}` } },
+        ],
+      })
       .skip(skipProducts)
       .limit(to)
       .sort({ rating: -1 });
@@ -721,10 +994,6 @@ router.get("/trendingproducts", async (req, res) => {
 router.get("/trendingproductscomp", async (req, res) => {
   const product = await productSchema.aggregate([{ $sample: { size: 4 } }]);
 
-  // const product = await productSchema
-  //   .find({ prodQuantity: { $gte: 1 } })
-  //   .limit(50);
-
   res.json(product);
 });
 
@@ -732,8 +1001,8 @@ router.get("/topsellingcomp", async (req, res) => {
   const allOrders = await orderSchema.aggregate([
     {
       $group: {
-        _id: "$productId", // Replace "commonField" with the actual field name
-        documents: { $push: "$$ROOT" }, // Store the matching documents in an array
+        _id: "$productId",
+        documents: { $push: "$$ROOT" },
         count: { $sum: 1 },
       },
     },
@@ -745,38 +1014,42 @@ router.get("/topsellingcomp", async (req, res) => {
 
   let responseData = [];
 
-  for (let index = 0; index < 4; index++) {
-    const product = allOrders[index];
-    const prod = await productSchema.findById(product._id);
+  if (allOrders.length > 0) {
+    for (let index = 0; index < 4; index++) {
+      const product = allOrders[index];
+      const prod = await productSchema.findById(product.id);
 
-    const {
-      _id,
-      prodName,
-      prodDesc,
-      prodQuantity,
-      prodCategory,
-      prodPrice,
-      prodMRP,
-      discount,
-      rating,
-      prodImage,
-    } = prod;
+      const {
+        _id,
+        prodName,
+        prodDesc,
+        prodQuantity,
+        prodCategory,
+        prodPrice,
+        prodMRP,
+        discount,
+        rating,
+        prodImage,
+      } = prod;
 
-    const prodData = {
-      _id,
-      prodName,
-      prodDesc,
-      prodQuantity,
-      prodCategory,
-      prodPrice,
-      prodMRP,
-      discount,
-      rating,
-      prodImage,
-      ordersCount: product.count,
-    };
+      const prodData = {
+        _id,
+        prodName,
+        prodDesc,
+        prodQuantity,
+        prodCategory,
+        prodPrice,
+        prodMRP,
+        discount,
+        rating,
+        prodImage,
+        ordersCount: product.count,
+      };
 
-    responseData.push(prodData);
+      responseData.push(prodData);
+    }
+  } else {
+    responseData;
   }
 
   res.json(responseData);

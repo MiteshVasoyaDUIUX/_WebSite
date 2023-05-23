@@ -85,7 +85,7 @@ router.post(
       .split(",")[0];
 
     const files = req.files;
-    console.log("Files: ", req.files, "prodImage: ", prodImage);
+    // console.log("Files: ", req.files, "prodImage: ", prodImage);
 
     for (let index = 0; index < files.length; index++) {
       const bytes = files[index].buffer;
@@ -107,9 +107,12 @@ router.post(
         });
     }
 
-    console.log("Prod Image Array : ", prodImageArray);
+    // console.log("Prod Image Array : ", prodImageArray);
 
-    const discount = ((prodMRP - prodPrice) * 100) / prodMRP;
+    const discount = Math.floor(
+      ((Number(prodMRP[0]) - Number(prodPrice[0])) * 100) / Number(prodMRP[0])
+    );
+    console.log("Discount : ", discount);
 
     const newProduct = new productSchema({
       prodName: prodName[0],
