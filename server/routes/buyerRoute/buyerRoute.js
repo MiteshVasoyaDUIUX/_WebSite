@@ -56,11 +56,18 @@ const actionCodeSettings = {
     const cartLength = cart.cart.length;
     let cartProducts = [];
 
-    // console.log("Users Wishlist : ", cart.cart);
+    console.log("Users CART : ", cart.cart);
     // console.log("Cart : ", cart.cart[0].quantity);
 
     for (let i = 0; i < cartLength; i++) {
       const product = await productSchema.findById(cart.cart[i].productId);
+
+      const coupon = await couponCodeSchema.findOne({
+        couponcode: cart.cart[i].couponData?.couponCode,
+      });
+
+      console.log("COUPON : ", coupon);
+
       let newProduct = {
         _id: product._id,
         prodName: product.prodName,
@@ -74,6 +81,12 @@ const actionCodeSettings = {
         prodImage: product.prodImage,
         date: product.date,
         quantity: cart.cart[i].quantity,
+        couponData: {
+          isApplied: cart.cart[i].couponData.isApplied,
+          validCoupon: coupon?.quantity > 0,
+          couponCode: coupon?.couponcode,
+          discount: coupon?.discount,
+        },
       };
       cartProducts.push(newProduct);
       // console.log("PRODUCTS : ", newProduct)
@@ -86,33 +99,30 @@ const actionCodeSettings = {
   router.put("/addtocart/:id", protectBuyer, async (req, res) => {
     const productId = req.body.productId;
     const id = req.params.id;
+    const couponData = req.body.couponData;
 
-    console.log("PRODUCT ID", productId);
+    console.log("COUPON : ", req.body);
 
     const response = await userSchema.findById(id).select("cart");
 
     const dataCart = response.cart;
-    const indexOfProd = dataCart.findIndex((e) => e.productId === productId);
+    const indexOfProd = dataCart.findIndex((e) => {
+      return e.productId === productId;
+    });
 
-    console.log("Cart Response : ", dataCart);
+    console.log("Cart Response : ", indexOfProd);
 
     if (indexOfProd === -1) {
       const ppp = {
         productId,
         quantity: 1,
+        couponData: couponData,
       };
-
       dataCart.push(ppp);
-
-      console.log("Cart : ", dataCart);
-
       const addedToCart = await userSchema.findByIdAndUpdate(id, {
         cart: dataCart,
       });
-
       const newCart = await userSchema.findById(id).select("cart");
-
-      // // console.log("Added To Cart : ", newCart.cart);
       res.json(newCart.cart);
     } else {
       const newQuantity = dataCart[indexOfProd].quantity + 1;
@@ -122,9 +132,8 @@ const actionCodeSettings = {
         dataCart[indexOfProd] = {
           productId,
           quantity: newQuantity,
+          couponData: couponData,
         };
-
-        console.log("indexOfProd : ", dataCart[indexOfProd]);
 
         const addedToCart = await userSchema.findByIdAndUpdate(id, {
           cart: dataCart,
@@ -163,6 +172,13 @@ const actionCodeSettings = {
 
     for (let i = 0; i < cartLength; i++) {
       const product = await productSchema.findById(newCart.cart[i].productId);
+
+      const coupon = await couponCodeSchema.findOne({
+        couponcode: newCart.cart[i].couponData?.couponCode,
+      });
+
+      console.log("COUPON : ", coupon);
+
       let newProduct = {
         _id: product._id,
         prodName: product.prodName,
@@ -176,8 +192,15 @@ const actionCodeSettings = {
         prodImage: product.prodImage,
         date: product.date,
         quantity: newCart.cart[i].quantity,
+        couponData: {
+          isApplied: newCart.cart[i].couponData.isApplied,
+          validCoupon: coupon?.quantity > 0,
+          couponCode: coupon?.couponcode,
+          discount: coupon?.discount,
+        },
       };
       cartProducts.push(newProduct);
+      // console.log("PRODUCTS : ", newProduct)
     }
     console.log("Cart Product : ", cartProducts);
 
