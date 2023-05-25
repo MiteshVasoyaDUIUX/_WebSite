@@ -113,7 +113,7 @@ router.get("/fetch/conversations", protectChat, async (req, res) => {
 
     const userId = conversationId.users[1];
 
-    console.log("USER ID : ", userId)
+    console.log("USER ID : ", userId);
 
     const userName = await getUserName(userId);
 
@@ -144,6 +144,8 @@ router.post("/save/chat", protectChat, async (req, res) => {
   const message = await newChat.save();
 
   console.log("Chat Data : ", data);
+
+  // res.json();
 });
 
 module.exports = router;

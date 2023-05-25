@@ -77,6 +77,8 @@ router.post("/login", async (req, res) => {
 
     const token = await generateToken(userId, findInMDB[0].role);
 
+    console.log("USER LOGIN DATA : ", findInMDB);
+
     if (findInMDB[0].role === "buyer") {
       res.redirect(`/buyer?token=${token}`);
     } else if (findInMDB[0].role === "admin") {

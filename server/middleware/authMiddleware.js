@@ -16,7 +16,7 @@ const protectLoginRegister = asyncHandler(async (req, res, next) => {
 
       req.user = await userSchema
         .findById(decoded.id)
-        .select("-password, -cart");
+        .select("-password");
       req.token = token;
       // console.log("Token : ", req.token);
       next();

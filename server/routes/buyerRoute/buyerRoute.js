@@ -34,7 +34,7 @@ const actionCodeSettings = {
     const token = req.token;
 
     if (role === "buyer") {
-      // console.log("allOrders");
+      console.log("USER RESPONSE : ", user);
       res.json({
         user,
         role,
@@ -50,13 +50,10 @@ const actionCodeSettings = {
     const id = req.params.id;
     // const token = req.token;
 
-    console.log("USER ID", id);
-
     const cart = await userSchema.findById(id).select("cart");
     const cartLength = cart.cart.length;
     let cartProducts = [];
 
-    console.log("Users CART : ", cart.cart);
     // console.log("Cart : ", cart.cart[0].quantity);
 
     for (let i = 0; i < cartLength; i++) {
@@ -66,7 +63,7 @@ const actionCodeSettings = {
         couponcode: cart.cart[i].couponData?.couponCode,
       });
 
-      console.log("COUPON : ", coupon);
+      // console.log("COUPON : ", coupon);
 
       let newProduct = {
         _id: product._id,
@@ -99,9 +96,9 @@ const actionCodeSettings = {
   router.put("/addtocart/:id", protectBuyer, async (req, res) => {
     const productId = req.body.productId;
     const id = req.params.id;
-    const couponData = req.body.couponData;
+    let couponData = req.body.couponData;
 
-    console.log("COUPON : ", req.body);
+    // console.log("COUPON : ", req.body);
 
     const response = await userSchema.findById(id).select("cart");
 
@@ -110,7 +107,12 @@ const actionCodeSettings = {
       return e.productId === productId;
     });
 
-    console.log("Cart Response : ", indexOfProd);
+    console.log("Cart Response : ", dataCart[indexOfProd]);
+
+    if (dataCart[indexOfProd].couponData.isApplied == true) {
+      console.log("LOG : ", dataCart[indexOfProd]);
+      couponData = dataCart[indexOfProd].couponData;
+    }
 
     if (indexOfProd === -1) {
       const ppp = {
@@ -177,7 +179,7 @@ const actionCodeSettings = {
         couponcode: newCart.cart[i].couponData?.couponCode,
       });
 
-      console.log("COUPON : ", coupon);
+      // console.log("COUPON : ", coupon);
 
       let newProduct = {
         _id: product._id,
@@ -229,9 +231,6 @@ const actionCodeSettings = {
     const cartLength = newCart.cart.length;
     let cartProducts = [];
 
-    // console.log("Users Wishlist : ", cart.cart);
-    // console.log("Cart : ", cart.cart[0].quantity);
-
     for (let i = 0; i < cartLength; i++) {
       const product = await productSchema.findById(newCart.cart[i].productId);
       let newProduct = {
@@ -249,7 +248,6 @@ const actionCodeSettings = {
         quantity: newCart.cart[i].quantity,
       };
       cartProducts.push(newProduct);
-      // console.log("PRODUCTS : ", newProduct)
     }
     console.log("Cart Product : ", cartProducts);
 
@@ -259,13 +257,10 @@ const actionCodeSettings = {
   router.put("/addtowishlist/:id", protectBuyer, async (req, res) => {
     const productId = req.body.productId;
     const id = req.params.id;
-    // const token = req.token;
 
     console.log("PRODUCT ID", productId);
 
     const response = await userSchema.findById(id).select("wishlist");
-
-    // console.log("Wishlist Response : ", response.wishlist);
 
     if (!response) {
       let wishlist = [];
@@ -533,8 +528,6 @@ router.post("/placecartorder", protectView, async (req, res) => {
   let outOfStock = [];
   let successfull = [];
 
-  console.log("Place Cart Order...");
-
   for (let index = 0; index < checkoutData.length; index++) {
     let totalAmount;
     let coupon;
@@ -543,13 +536,15 @@ router.post("/placecartorder", protectView, async (req, res) => {
       .findById(checkoutData[index].productId)
       .select("prodQuantity");
 
+    console.log("COUPON DATA : ", checkoutData[index].couponData);
+
     if (
       productData.prodQuantity > 0 &&
       productData.prodQuantity >= checkoutData[index].quantity
     ) {
-      if (checkoutData[index].couponCode) {
+      if (checkoutData[index].couponData.isApplied === true) {
         coupon = await couponCodeSchema.findOne({
-          couponcode: checkoutData[index].couponCode,
+          couponcode: checkoutData[index].couponData.couponCode,
         });
         if (coupon && coupon.quantity > 0) {
           totalAmount = Math.ceil(
@@ -603,7 +598,6 @@ router.post("/placecartorder", protectView, async (req, res) => {
 
       if (!addressFound) {
         allAddress.address.push(deliveryAddress);
-        console.log("Adding Address...");
 
         const updateAddress = await userSchema.findByIdAndUpdate(userId, {
           address: allAddress.address,
@@ -668,25 +662,23 @@ router.post("/placecartorder", protectView, async (req, res) => {
             .select("_id");
           // console.log("Conversaiton Schema : ", conversationId._id);
         }
+
+        if (coupon) {
+          const reduceCouponQuantity = await couponCodeSchema
+            .findOne({
+              couponcode: coupon?.couponcode,
+            })
+            .select("quantity");
+          const updateQuantity = await couponCodeSchema.findByIdAndUpdate(
+            reduceCouponQuantity._id,
+            { quantity: reduceCouponQuantity.quantity - 1 }
+          );
+        }
       }
     } else {
       outOfStock.push(productData.productId);
       console.log("Out Of Stocks Products : ", outOfStock.length);
       // res.status(400).json({ message: "Not Enough Quantity..." });
-    }
-
-    if (index === checkoutData.length - 1) {
-      if (coupon) {
-        const reduceCouponQuantity = await couponCodeSchema
-          .findOne({
-            couponcode: coupon?.couponcode,
-          })
-          .select("quantity");
-        const updateQuantity = await couponCodeSchema.findByIdAndUpdate(
-          reduceCouponQuantity._id,
-          { quantity: reduceCouponQuantity.quantity - 1 }
-        );
-      }
     }
   }
   res.status(200).json({
