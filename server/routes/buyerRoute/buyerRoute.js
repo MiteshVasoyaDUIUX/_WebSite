@@ -109,7 +109,7 @@ const actionCodeSettings = {
 
     console.log("Cart Response : ", dataCart[indexOfProd]);
 
-    if (dataCart[indexOfProd].couponData.isApplied == true) {
+    if (dataCart[indexOfProd]?.couponData?.isApplied == true) {
       console.log("LOG : ", dataCart[indexOfProd]);
       couponData = dataCart[indexOfProd].couponData;
     }

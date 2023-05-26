@@ -247,8 +247,6 @@ router.get("/query/", async (req, res) => {
   const query = req.query.query;
   const queryWords = query.split(" ");
 
-  // console.log(`Query Words  :  ${queryWords}`.rainbow.white);
-
   const regexArray = queryWords.map((word) => new RegExp(word, "i"));
 
   const conditionsProdName = regexArray.map((regex) => ({ prodName: regex }));
@@ -304,26 +302,64 @@ router.get("/query/", async (req, res) => {
     });
   }
 
-  if (queryResults.length <= 10) {
-    const queryResults4 = await productSchema
-      .find({ $or: fieldConditions })
-      .select("prodName")
-      .limit(10);
+  // if (queryResults.length <= 10) {
+  //   const queryResults4 = await productSchema
+  //     .find({ $or: fieldConditions })
+  //     .select("prodName")
+  //     .limit(10);
 
-    queryResults4.map((result) => {
-      if (queryResults.length <= 10) queryResults.push(result);
-    });
+  //   queryResults4.map((result) => {
+  //     if (queryResults.length <= 10) queryResults.push(result);
+  //   });
+  // }
+
+  let uniqueQuery = [];
+
+  let uniqueObject = {};
+
+  for (let i in queryResults) {
+    objTitle = queryResults[i]["_id"];
+    uniqueObject[objTitle] = queryResults[i];
   }
-  // console.log("ProdName Length : ", queryResults);
+
+  for (i in uniqueObject) {
+    uniqueQuery.push(uniqueObject[i]);
+  }
 
   setTimeout(() => {
-    res.json({ response: queryResults });
+    res.json({ response: uniqueQuery });
   }, 0);
 });
 
 router.post("/search", async (req, res) => {
   const page = req.query.page;
   const query = req.query.query;
+  const queryWords = query.split(" ");
+
+  const regexArray = queryWords.map((word) => new RegExp(word, "i"));
+
+  const conditionsProdName = regexArray.map((regex) => ({ prodName: regex }));
+  const conditionsProdDesc = regexArray.map((regex) => ({ prodDesc: regex }));
+  const conditionsProdCategory = regexArray.map((regex) => ({
+    prodCategory: regex,
+  }));
+
+  const andQueryProdName = { $and: conditionsProdName };
+  const andQueryProdDesc = { $and: conditionsProdDesc };
+  const andQueryProdCategory = { $and: conditionsProdCategory };
+
+  const orQueryProdName = { $or: conditionsProdName };
+  const orQueryProdDesc = { $or: conditionsProdDesc };
+  const orQueryProdCategory = { $or: conditionsProdCategory };
+
+  const fieldConditions = queryWords.map((word) => ({
+    $or: [
+      { prodName: { $regex: word, $options: "i" } },
+      { prodDesc: { $regex: word, $options: "i" } },
+      { prodCategory: { $regex: word, $options: "i" } },
+    ],
+  }));
+
   const sortBy = req.query.sortBy;
   const to = 30;
   const filter = req.body;
@@ -342,31 +378,23 @@ router.post("/search", async (req, res) => {
     reqProdQuantity = 1;
   }
 
+  andQueryProdName["$and"].push(
+    { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
+    { rating: { $gte: `${rating}` } },
+    { discount: { $gte: `${discount}` } },
+    { paymentType: { $regex: `${POD}`, $options: "i" } },
+    { prodQuantity: { $gte: `${includeOutOfStock}` } }
+  );
+
+  console.log("AND QUERY : ", andQueryProdName);
+
   const newArrivals = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find({
-      $and: [
-        { prodName: { $regex: `${query}`, $options: "i" } },
-        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
-        { rating: { $gte: `${rating}` } },
-        { discount: { $gte: `${discount}` } },
-        { paymentType: { $regex: `${POD}`, $options: "i" } },
-        { prodQuantity: { $gte: `${includeOutOfStock}` } },
-      ],
-    });
+    const totalProducts = await productSchema.find(andQueryProdName);
 
     const resProducts = await productSchema
-      .find({
-        $and: [
-          { prodName: { $regex: `${query}`, $options: "i" } },
-          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
-          { rating: { $gte: `${rating}` } },
-          { discount: { $gte: `${discount}` } },
-          { paymentType: { $regex: `${POD}`, $options: "i" } },
-          { prodQuantity: { $gte: `${includeOutOfStock}` } },
-        ],
-      })
+      .find(andQueryProdName)
       .skip(skipProducts)
       .limit(to);
 
@@ -390,28 +418,10 @@ router.post("/search", async (req, res) => {
   const priceHighToLow = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find({
-      $and: [
-        { prodName: { $regex: `${query}`, $options: "i" } },
-        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
-        { rating: { $gte: `${rating}` } },
-        { discount: { $gte: `${discount}` } },
-        { paymentType: { $regex: `${POD}`, $options: "i" } },
-        { prodQuantity: { $gte: `${includeOutOfStock}` } },
-      ],
-    });
+    const totalProducts = await productSchema.find(andQueryProdName);
 
     const resProducts = await productSchema
-      .find({
-        $and: [
-          { prodName: { $regex: `${query}`, $options: "i" } },
-          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
-          { rating: { $gte: `${rating}` } },
-          { discount: { $gte: `${discount}` } },
-          { paymentType: { $regex: `${POD}`, $options: "i" } },
-          { prodQuantity: { $gte: `${includeOutOfStock}` } },
-        ],
-      })
+      .find(andQueryProdName)
       .skip(skipProducts)
       .limit(to)
       .sort({ prodPrice: -1 });
@@ -425,7 +435,7 @@ router.post("/search", async (req, res) => {
     };
 
     // console.log("Total Products : ", totalProducts.length);
-    console.log("Limited Products Price Hight To Low : ", resProducts.length);
+    // console.log("Limited Products Price Hight To Low : ", resProducts.length);
     // console.log("Sent Products : ", Number(page) * 9);
 
     if (response) {
@@ -438,28 +448,10 @@ router.post("/search", async (req, res) => {
   const priceLowToHigh = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find({
-      $and: [
-        { prodName: { $regex: `${query}`, $options: "i" } },
-        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
-        { rating: { $gte: `${rating}` } },
-        { discount: { $gte: `${discount}` } },
-        { paymentType: { $regex: `${POD}`, $options: "i" } },
-        { prodQuantity: { $gte: `${includeOutOfStock}` } },
-      ],
-    });
+    const totalProducts = await productSchema.find(andQueryProdName);
 
     const resProducts = await productSchema
-      .find({
-        $and: [
-          { prodName: { $regex: `${query}`, $options: "i" } },
-          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
-          { rating: { $gte: `${rating}` } },
-          { discount: { $gte: `${discount}` } },
-          { paymentType: { $regex: `${POD}`, $options: "i" } },
-          { prodQuantity: { $gte: `${includeOutOfStock}` } },
-        ],
-      })
+      .find(andQueryProdName)
       .skip(skipProducts)
       .limit(to)
       .sort({ prodPrice: 1 });
@@ -482,28 +474,10 @@ router.post("/search", async (req, res) => {
   const highRating = async () => {
     const skipProducts = page * to - 30;
 
-    const totalProducts = await productSchema.find({
-      $and: [
-        { prodName: { $regex: `${query}`, $options: "i" } },
-        { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
-        { rating: { $gte: `${rating}` } },
-        { discount: { $gte: `${discount}` } },
-        { paymentType: { $regex: `${POD}`, $options: "i" } },
-        { prodQuantity: { $gte: `${includeOutOfStock}` } },
-      ],
-    });
+    const totalProducts = await productSchema.find(andQueryProdName);
 
     const resProducts = await productSchema
-      .find({
-        $and: [
-          { prodName: { $regex: `${query}`, $options: "i" } },
-          { prodPrice: { $gte: `${price[0]}`, $lte: `${price[1]}` } },
-          { rating: { $gte: `${rating}` } },
-          { discount: { $gte: `${discount}` } },
-          { paymentType: { $regex: `${POD}`, $options: "i" } },
-          { prodQuantity: { $gte: `${includeOutOfStock}` } },
-        ],
-      })
+      .find(andQueryProdName)
       .skip(skipProducts)
       .limit(to)
       .sort({ rating: -1 });
@@ -546,10 +520,15 @@ router.post("/search", async (req, res) => {
 });
 
 router.get("/product/:id", async (req, res) => {
-  const productId = req.params;
-  const product = await productSchema.findById(productId.id);
+  try {
+    const productId = req.params;
+    const product = await productSchema.findById(productId.id);
 
-  res.json(product);
+    res.json(product);
+  } catch (error) {
+    console.log(`ERRRROR : , ${error}`.bgGreen);
+    res.json();
+  }
 });
 
 router.post("/newarrivals", async (req, res) => {
@@ -1003,7 +982,7 @@ router.get("/topsellingcomp", async (req, res) => {
       $group: {
         _id: "$productId",
         documents: { $push: "$$ROOT" },
-        count: { $sum: 1 },
+        count: { $sum: "$quantity" },
       },
     },
   ]);
